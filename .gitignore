@@ -1,5 +1,6 @@
 .Rproj.user
-*.Rhistory
+.Rhistory
+.RData
 *.Ruserdata
 *.Rproj
 .Rproj.user
@@ -17,5 +18,4 @@ respaldo*
 *.JPEG
 *.emf
 *.mp4
-.Rhistory
-.RData
+
