@@ -19,8 +19,7 @@ Un vector numérico con los valores del IET.
 \details{
 Cálculo:
 
-\deqn{IET = 10 \times (6-\frac{0.42-0.36 \times ln(\overline{PT 
-  (\mu g/L)})}{ln(2)})-20}
+\deqn{IET = 10 \times (6-\frac{0.42-0.36 \times ln(\overline{PT (\mu g/L)})}{ln(2)})-20}
 }
 \examples{
 iet(25)
