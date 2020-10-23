@@ -32,7 +32,7 @@ error.
 t_eti_base <- readRDS(file.path(ruta_base, "data/t_eti_base.rds"))
 t_eti <- tibble::tibble(
   id_parametro = c(2032L, 2017L, 2101L),
-  etiqueta = c('Temperatura (ºC)', 'OD (mg/L)',
+  etiqueta = c('Temperatura (ÂºC)', 'OD (mg/L)',
                expression('NO'[2]*' (mg-N/L)')))
 eti(2017)
 eti(2101)

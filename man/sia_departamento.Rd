@@ -9,7 +9,7 @@ Tabla con 21 filas y 3 columnas:
 
 \describe{
 
-\item{id}{Número único identificador del departamento}
+\item{id}{}
 
 \item{dep_nombre}{Nombre del departamento}
 
