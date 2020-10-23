@@ -16,11 +16,6 @@
 #'
 #' @details Cálculo:
 #'
-#'   \deqn{p(x) = \frac{\lambda^x e^{-\lambda}}{x!}}{%
-#'         p(x) = \lambda^x exp(-\lambda)/x!}
-#'
-#'   for \eqn{x = 0, 1, 2, \ldots}.
-#'
 #' \deqn{IET = 10 \times (6-\frac{0.42-0.36 \times ln(\overline{PT (\mu g/L)})}{ln(2)})-20}{%
 #'       IET = 10 (6 - (.42 - .36 log(PT \mu g/L)) / log(2)) - 20}
 #'
