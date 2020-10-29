@@ -27,3 +27,8 @@ require(magrittr)
 tibble(x = c(4, -4, 4, -4), n = c(2, 2, 3, 3)) \%>\%
   mutate(raiz(x, n), x ^ (1 / n), abs(x) ^ (1 / n))
 }
+\seealso{
+\code{\link{media_geom}}
+}
+\keyword{arith}
+\keyword{univar}

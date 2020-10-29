@@ -14,13 +14,13 @@ por litro.}
 Un vector numérico con los valores del IET.
 }
 \description{
-Índice de Estado Trófico
+Calcula valores del IET a partir de la concentración de Fósforo Total (PT),
+en microgramos por litro.
 }
 \details{
-Cálculo:
-
-\deqn{IET = 10 \times (6-\frac{0.42-0.36 \times ln(\overline{PT (\mu g/L)})}{ln(2)})-20}{%
-      IET = 10 (6 - (.42 - .36 log(PT \mu g/L)) / log(2)) - 20}
+Cálculo: \deqn{IET = 10 \times (6-\frac{0.42-0.36 \times ln(\overline{PT%
+(\mu g/L)})}{ln(2)})-20}{% IET = 10 (6 - (.42 - .36 log(PT \mu g/L)) /
+log(2)) - 20}
 }
 \examples{
 iet(25)

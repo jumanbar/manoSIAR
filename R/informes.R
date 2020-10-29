@@ -9,15 +9,18 @@
 
 #' Índice de Estado Trófico
 #'
+#' Calcula valores del IET a partir de la concentración de Fósforo Total (PT),
+#' en microgramos por litro.
+#'
+#' Cálculo: \deqn{IET = 10 \times (6-\frac{0.42-0.36 \times ln(\overline{PT%
+#' (\mu g/L)})}{ln(2)})-20}{% IET = 10 (6 - (.42 - .36 log(PT \mu g/L)) /
+#' log(2)) - 20}
+#'
 #' @param x numeric: valores de concentración de fósforo total, en microgramos
 #'   por litro.
 #'
 #' @return Un vector numérico con los valores del IET.
 #'
-#' @details Cálculo:
-#'
-#' \deqn{IET = 10 \times (6-\frac{0.42-0.36 \times ln(\overline{PT (\mu g/L)})}{ln(2)})-20}{%
-#'       IET = 10 (6 - (.42 - .36 log(PT \mu g/L)) / log(2)) - 20}
 #'
 #' @export
 #'
@@ -29,6 +32,20 @@ iet <- function(x) {
 }
 
 #' Media geométrica
+#'
+#' Calcula la media geométrica de un vector numérico.
+#'
+#' Es la raíz \code{n}-ésima del producto de todos los números contenidos en
+#' \code{x}, siendo \code{n} = \code{length(x)}.
+#'
+#' En general puede considerarse como el resultado de \code{prod(x) ^ (1 /
+#' length(x))}, aunque en lugar de usar \code{^(1/length(x))} se usa la función
+#' \code{\link{raiz}}, diseñada para contemplar casos particulares.
+#'
+#' @seealso \href{https://es.wikipedia.org/wiki/Media_geom%C3%A9trica}{Artículo
+#'   en Wikipedia}, \code{\link{raiz}}
+#'
+#' @keywords arith univar
 #'
 #' @param x numeric
 #'
@@ -57,6 +74,10 @@ media_geom <- function(x) {
 #' par y \code{x} negativo, devueve \code{NaN}. Ver ejemplo para comparar con
 #' \code{x ^ (1 / n)} y con \code{abs(x) ^ (1 / n)}.
 #'
+#' @keywords arith univar
+#' 
+#' @seealso \code{\link{media_geom}}
+#' 
 #' @export
 #'
 #' @examples

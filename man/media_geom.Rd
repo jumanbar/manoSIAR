@@ -13,10 +13,24 @@ media_geom(x)
 Valor numérico equivalente a la media geométrica de x
 }
 \description{
-Media geométrica
+Calcula la media geométrica de un vector numérico.
+}
+\details{
+Es la raíz \code{n}-ésima del producto de todos los números contenidos en
+\code{x}, siendo \code{n} = \code{length(x)}.
+
+En general puede considerarse como el resultado de \code{prod(x) ^ (1 /
+length(x))}, aunque en lugar de usar \code{^(1/length(x))} se usa la función
+\code{\link{raiz}}, diseñada para contemplar casos particulares.
 }
 \examples{
 media_geom(c(3, -2.34, 5427))
 media_geom(rnorm(6))
 media_geom(rnorm(5))
 }
+\seealso{
+\href{https://es.wikipedia.org/wiki/Media_geom\%C3\%A9trica}{Artículo
+en Wikipedia}, \code{\link{raiz}}
+}
+\keyword{arith}
+\keyword{univar}
