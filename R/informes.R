@@ -104,7 +104,7 @@ raiz <- function(x, n) {
 #' La idea de la tabla de etiquetas es generar una referencia que se usará en
 #' funciones para crear gráficos, tablas, etc...
 #'
-#' @seealso \code{\link{make_t_eti_base}}
+#' @seealso \code{\link{t_eti_base}}
 #'
 #' @param id_parametro Vector integer
 #' @param etiqueta Vector character o expression
@@ -132,7 +132,7 @@ raiz <- function(x, n) {
 #'      ylab = dplyr::filter(t_eti, id_parametro == 9999L)[[2]])
 t_eti_add <- function(id_parametro = NULL, etiqueta) {
 
-  out <- make_t_eti_base()
+  out <- t_eti_base
   if (is.null(id_parametro))
     return(out)
 
@@ -190,7 +190,7 @@ t_eti_add <- function(id_parametro = NULL, etiqueta) {
 eti <- function(id_parametro, t_eti) {
 
   if (missing(t_eti)) {
-    t_eti <- make_t_eti_base()
+    t_eti <- t_eti_base
     warning("Argumento t_eti faltante: se usa la tabla base (ver ?t_eti_base)")
   }
 
@@ -213,33 +213,37 @@ eti <- function(id_parametro, t_eti) {
 #'   no es especificado, se utilizará la función \code{eti} para crear la
 #'   etiqueta.
 #'
-#' @details Requiere de la tabla decreto_long para agregar las líneas
+#' @details Requiere de la tabla decreto para agregar las líneas
 #'   horizontales correspondientes a los valores límites aceptados para la clase
 #'   1 de aguas (decreto 253/79).
-#' @return
+#' @return Objeto de clase `gg` (hereda de \code{\link[ggplot2]{ggplot}}).
 #' @export
+#'
+#' @seealso \code{\link{g_mes_all}}, \code{\link{t_eti_base}}
 #'
 #' @examples
 #' dfo <- data.frame(mes = 3:6, codigo_pto = 100200:100203,
 #'                   id_parametro = 2009, valor = c(140, 120, 198, 166))
-#' decreto_long <- readRDS(file.path(ruta_base, "data/decreto_long.rds"))
-#' g_mes(dfo, id_param = 2009, ylab = 'Cond (μS/cm)')
+#' g_mes(dfo, id_parametro = 2009, ylab = 'Cond (μS/cm)')
 #' g_mes(dfo, nombre_clave_param = 'Conduc', ylab = 'Cond (μS/cm)')
-g_mes <- function(.data, id_param = NULL, pos_leyenda = 'none',
-                  nombre_clave_param,
-                  ylab = NULL) {
+g_mes <- function(.data, id_parametro = NULL, pos_leyenda = 'none',
+                  nombre_clave_param, ylab = NULL, t_eti) {
 
-  id <- if (is.null(id_param)) {
+  if (missing(t_eti)) {
+    t_eti <- t_eti_base
+    warning("Se usa t_eti_base como sustituta del argumento t_eti")
+  }
+  id_parametro <- if (is.null(id_parametro)) {
     dplyr::filter(sia_parametro,
                   nombre_clave == nombre_clave_param)$id_parametro
-  } else id_param
+  } else id_parametro
 
   if (is.null(ylab))
-    ylab <- eti(id)
+    ylab <- eti(id_parametro, t_eti)
 
   out <-
     .data %>%
-    dplyr::filter(id_parametro == id) %>%
+    dplyr::filter(id_parametro == !!id_parametro) %>%
     ggplot() +
     aes(mes, valor, color = codigo_pto) +
     geom_jitter(width = 0.1, alpha = 0.7) +
@@ -253,8 +257,8 @@ g_mes <- function(.data, id_param = NULL, pos_leyenda = 'none',
   if (!nrow(out$data)) {
     corte <-
       sia_parametro %>%
-      dplyr::filter(id_parametro == id) %>%
-      left_join(codigos_param, by = "id_parametro")
+      dplyr::filter(id_parametro == !!id_parametro) %>%
+      dplyr::left_join(codigos_param, by = "id_parametro")
 
     texto_par <- corte$parametro.x
 
@@ -266,7 +270,9 @@ g_mes <- function(.data, id_param = NULL, pos_leyenda = 'none',
     return(out)
   }
 
-  dec <- dplyr::filter(decreto_long, id_parametro == id & clase == "1")
+  dec <- dplyr::filter(decreto, id_parametro == !!id_parametro,
+                       clase == "1",
+                       !is.na(valor))
   if (nrow(dec)) {
     out <- out +
       geom_hline(yintercept = dec$valor, linetype = "longdash", color = 'red')
@@ -275,12 +281,36 @@ g_mes <- function(.data, id_param = NULL, pos_leyenda = 'none',
   return(out)
 }
 
-g_mes_all <- function(.data, id_parametro, ...) {
+#' Juntar varias gráficas por mes
+#'
+#' @param .data Datos
+#' @param id_parametro `integer`. id de varios parámetros
+#' @param t_eti `tbl_df`. Tabla de etiquetas
+#' @param ... Argumentos derivados a \code
+#'
+#' @import ggplot2
+#' @return
+#' @export
+#'
+#' @seealso \code{\link{g_mes}}, \code{\link{t_eti_base}}
+#'
+#' @examples
+#' p <- c(PT=2098, NT=2102, ST=2028, Conduc=2009)
+#' dfo <- data.frame(mes = 3:6, codigo_pto = c("RN1", "RN2", "RN3", "RN5"),
+#'                   id_parametro = rep(p, each = 4),
+#'                   valor = rnorm(16))
+#' g_mes_all(dfo, id_parametro = p)
+g_mes_all <- function(.data, id_parametro, t_eti, ...) {
+
+  if (missing(t_eti)) {
+    t_eti <- t_eti_base
+    warning("Se usa t_eti_base como sustituta del argumento t_eti")
+  }
 
   lista <- vector(mode = "list", length = length(id_parametro))
   # for (i in 1:(length(id_parametro) - 1))
   for (i in 1:(length(id_parametro)))
-    lista[[i]] <- g_mes(.data, id_param = id_parametro[i])
+    lista[[i]] <- g_mes(.data, id_param = id_parametro[i], t_eti = t_eti)
 
   lista[[i]] <-
     lista[[i]] +
@@ -293,21 +323,26 @@ g_mes_all <- function(.data, id_parametro, ...) {
     theme_bw()
 
   out <-
-    wrap_plots(lista, guides = 'collect', ...) +
-    plot_annotation(tag_levels = 'A')
+    patchwork::wrap_plots(lista, guides = 'collect', ...) +
+    patchwork::plot_annotation(tag_levels = 'A')
 
   print(out)
 }
 
 g_comp_est <- function(.data, nombre_clave_param,
-                       id_param = NULL, ylab = NULL) {
+                       id_param = NULL, ylab = NULL, t_eti) {
+
+  if (missing(t_eti)) {
+    t_eti <- t_eti_base
+    warning("Se usa t_eti_base como sustituta del argumento t_eti")
+  }
 
   id <- if (is.null(id_param))
     dplyr::filter(sia_parametro, nombre_clave == nombre_clave_param)$id_parametro else
       id_param
 
   if (is.null(ylab))
-    ylab <- eti(id)
+    ylab <- eti(id, t_eti)
 
   out <-
     .data %>%
@@ -328,7 +363,7 @@ g_comp_est <- function(.data, nombre_clave_param,
           text = element_text(size = 10),
           axis.text.x = element_text(angle=30, vjust=1))
 
-  dec <- dplyr::filter(decreto_long, id_parametro == id & clase == "1")
+  dec <- dplyr::filter(decreto, id_parametro == id & clase == "1")
 
   if (nrow(dec)) {
     out <- out +
@@ -439,7 +474,7 @@ g_iet <- function(.data) {
 #'
 #' @examples
 #' d <- readRDS("tmp/datos_cuareim.rds")
-#' decreto_long <- readRDS("../data/decreto_long.rds")
+#' decreto <- readRDS("../data/decreto.rds")
 #' d$mes <- as.integer(d$mes)
 #' d$anio <- as.integer(d$anio)
 #' g_par_esp(d, 2032, 2019L, horiz = c(min = 5, max = 28))
@@ -629,7 +664,7 @@ g_par_esp <- function(.data, id_parametro, anio,
 #' @examples
 #' d <- readRDS("tmp/datos_cuareim.rds") %>%
 #'   dplyr::filter(id_parametro %in% c(2035, 2017:2018, 2091, 2098, 2111))
-#' h <- dplyr::filter(decreto_long, clase == "1", !is.na(valor))
+#' h <- dplyr::filter(decreto, clase == "1", !is.na(valor))
 #' g_par_esp_files(d, 2019L, tabla_horiz = h, path = "tmp")
 g_par_esp_files <- function(.data, anio, tabla_horiz = NULL, path = NULL) {
 

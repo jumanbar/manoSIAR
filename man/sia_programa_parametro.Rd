@@ -6,7 +6,8 @@
 \title{sia_programa_parametro ----
 Relación entre programas y parametros}
 \format{
-Tabla con 1458 filas y 3 columnas:
+Tabla con 1458 filas y
+3)` columnas:
 
 \describe{
 

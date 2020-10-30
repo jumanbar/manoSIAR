@@ -15,16 +15,23 @@ base de datos infambientalbd (SIA).}
 clasifican los valores de X. Ver detalles.}
 }
 \value{
-Lista con dos elementos: \describe{ \item{valores}{Valores originales
-"limpios" (puntos en vez de comas para decimales y sin espacios en blanco
-al inicio o al final.)} \item{tipos}{Vector integer (de misma longitud que
-\code{x}) con los id de los tipos de datos, tal como se pueden encontrar en
-la tabla \code{tipos_de_dato} (por ahora no está presente en el SIA, sino
-en la carpeta \code{sia_apps/data}).} }
+Lista con dos elementos:
+
+\describe{
+
+\item{valores}{Valores originales "limpios" (puntos en vez de comas para
+decimales y sin espacios en blanco al inicio o al final.)}
+
+\item{tipos}{Vector integer (de misma longitud que \code{x}) con los id de
+los tipos de datos, tal como se pueden encontrar en la tabla
+\code{tipos_de_dato} (por ahora no está presente en el SIA, sino en la
+carpeta \code{sia_apps/data}).}
+
+}
 }
 \description{
 Evalúa vector character que expresan valores numéricos, según las categorías
-de la tabla \code{tipos_de_dato}.
+de la tabla \code{\link{tipos_de_dato}}.
 }
 \details{
 El método por defecto, "simple", no diferencia "<LC" de "LD<X<LC",

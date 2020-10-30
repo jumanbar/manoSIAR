@@ -18,6 +18,6 @@ Hacer archivos con gráficos g_par_esp
 \examples{
 d <- readRDS("tmp/datos_cuareim.rds") \%>\%
   dplyr::filter(id_parametro \%in\% c(2035, 2017:2018, 2091, 2098, 2111))
-h <- dplyr::filter(decreto_long, clase == "1", !is.na(valor))
+h <- dplyr::filter(decreto, clase == "1", !is.na(valor))
 g_par_esp_files(d, 2019L, tabla_horiz = h, path = "tmp")
 }

@@ -6,16 +6,15 @@
 \usage{
 g_mes(
   .data,
-  id_param = NULL,
+  id_parametro = NULL,
   pos_leyenda = "none",
   nombre_clave_param,
-  ylab = NULL
+  ylab = NULL,
+  t_eti
 )
 }
 \arguments{
 \item{.data}{Tabla con datos}
-
-\item{id_param}{Escalar (integer). Anula nombre_clave_param.}
 
 \item{nombre_clave_param}{Nombre clave del parámetro, tal como aparece en la
 tabla parametro de infambientalbd}
@@ -23,22 +22,26 @@ tabla parametro de infambientalbd}
 \item{ylab}{Etiqueta para el eje y del gráfico resultante. Si este argumento
 no es especificado, se utilizará la función \code{eti} para crear la
 etiqueta.}
+
+\item{id_param}{Escalar (integer). Anula nombre_clave_param.}
 }
 \value{
-
+Objeto de clase \code{gg} (hereda de \code{\link[ggplot2]{ggplot}}).
 }
 \description{
-Graficar un parámetro por mes
+Hace una gráfica del parámetro por mes
 }
 \details{
-Requiere de la tabla decreto_long para agregar las líneas
+Requiere de la tabla decreto para agregar las líneas
 horizontales correspondientes a los valores límites aceptados para la clase
 1 de aguas (decreto 253/79).
 }
 \examples{
 dfo <- data.frame(mes = 3:6, codigo_pto = 100200:100203,
                   id_parametro = 2009, valor = c(140, 120, 198, 166))
-decreto_long <- readRDS(file.path(ruta_base, "data/decreto_long.rds"))
-g_mes(dfo, id_param = 2009, ylab = 'Cond (Î¼S/cm)')
+g_mes(dfo, id_parametro = 2009, ylab = 'Cond (Î¼S/cm)')
 g_mes(dfo, nombre_clave_param = 'Conduc', ylab = 'Cond (Î¼S/cm)')
+}
+\seealso{
+\code{\link{g_mes_all}}, \code{\link{t_eti_base}}
 }

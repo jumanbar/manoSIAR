@@ -5,7 +5,8 @@
 \alias{sia_datos_muestra_parametros}
 \title{Tabla con datos de infambientalbd}
 \format{
-Tabla con 237957 filas y 17 columnas:
+Tabla con 237957 filas y
+17)` columnas:
 
 \describe{
 
@@ -31,12 +32,20 @@ pendiente, 2. original, 3. aprobado}
 \item{valor_minimo_str}{character. Valor ingresado para la muestra del
 parámetro. No necesariamente es una expresión numérica. Ver detalles.}
 
-\item{id_estacion}{integer. Identificador de la estación de monitoreo.}
+\item{valor_maximo_str}{character. ..completar..}
 
-\item{replica}{logical. ..completar..}
+\item{ult_mod}{..completar..}
 
-\item{nro_muestra}{integer. Número de muestra asignado por SILAD. No es
-único para esta tabla (no confundir con id_muestra).}
+\item{ult_usu}{..completar..}
+
+\item{limite_deteccion}{character. Límite de detección.}
+
+\item{limite_cuantificacion}{character. Límite de cuantificación}
+
+\item{id_equipo}{integer. ..completar..}
+
+\item{usuario}{character. Usuario que ingresó los datos al SIA (no
+necesariamente corresponde con quien/es lo colectaron en campo)}
 
 }
 }

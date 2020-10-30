@@ -44,5 +44,5 @@ plot(0, 0,
      ylab = dplyr::filter(t_eti, id_parametro == 9999L)[[2]])
 }
 \seealso{
-\code{\link{make_t_eti_base}}
+\code{\link{t_eti_base}}
 }

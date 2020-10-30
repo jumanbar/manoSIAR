@@ -26,28 +26,30 @@ consulta_muestras(
 \item{con}{\code{PostgreSQLConnection}: objeto utilizado para conectarse con la
 base de datos. Ver details.}
 
-\item{id_matriz}{Integer. Valor único. Número de matriz.}
+\item{id_matriz}{integer. Valor único. Número de matriz.}
 
-\item{id_programa}{Integer. Vector con números id de programas. Si es \code{NULL}
+\item{id_programa}{integer. Vector con números id de programas. Si es \code{NULL}
 (valor por defecto), selecciona todos los programas.}
 
-\item{id_cuenca}{Integer. Vector con números de cuenca.}
+\item{id_cuenca}{integer. Vector con números de cuenca.}
 
-\item{id_sub_cuenca}{Integer. Vector con números de subcuenca.}
+\item{id_sub_cuenca}{integer. Vector con números de subcuenca.}
 
 \item{id_estacion}{Integer. Vector con números id de estaciones. Si es \code{NULL}
 (valor por defecto), selecciona todas las estaciones.}
 
-\item{id_tipo_punto}{Integer. Vector con números que identifican el tipo de
+\item{id_tipo_punto}{integer. Vector con números que identifican el tipo de
 punto (1. SUPERFICIE, 2. FONDO).}
 
 \item{id_depto}{Integer. Vector con números id de departamentos. Si es \code{NULL}
 (valor por defecto), selecciona todos los departamentos.}
 
-\item{id_parametro}{Integer. Vector con números id de parámetros. Si es
+\item{id_parametro}{integer. Vector con números id de parámetros. Si es
 \code{NULL} (valor por defecto), selecciona todos los parámetros.}
 
-\item{fecha_fin}{}
+\item{fecha_ini}{\code{character}. Fecha en formato \code{AAAA-MM-DD}.}
+
+\item{fecha_fin}{\code{character}. Fecha en formato \code{AAAA-MM-DD}.}
 }
 \value{
 Una \code{tibble}, en formato largo, con las columnas:
@@ -135,11 +137,12 @@ Trae datos de infambiental a través de una PostgreSQLConnection.
 \details{
 El parámetro \code{con} es un objeto utilizado para realizar la conexión
 con la base de datos. Específicamente, es llamado por la función
-DBI::dbGetQuery. La creación del objeto se hace en el archivo \code{global.R},
-cuyo código está basado en \href{https://tinyurl.com/yfl9kvol}{este ejemplo}.
+DBI::dbGetQuery. La creación del objeto normalmente se hace al iniciar el
+servidor shiny de una aplicación (en el archivo \code{global.R}
+correspondiente), cuyo código está basado en \href{https://tinyurl.com/yfl9kvol}{este ejemplo}.
 
 Los parámetros con el prefijo \code{id_} refieren al número de id presente en la
-base de datos del SIA infambiental.
+base de datos del SIA infambientalbd.
 
 Eliminación de datos repetidos:
 
@@ -155,11 +158,27 @@ En caso de que lo anterior no sea suficiente para desambigüar, se usa el id
 más reciente de la tabla \code{datos_muestra_parametros} y se descarta el resto.
 }
 \examples{
-# source("global.R", encoding = "UTF-8", local = TRUE)
+# ConexiÃ³n con la base de datos:
+drv <- DBI::dbDriver("PostgreSQL")
+con <- DBI::dbConnect(drv, dbname = "infambientalbd",
+                      host = "172.20.0.34", port = 5432,
+                      user = "shiny_usr", password = "shiny_passwd")
+# Para trabajar en la mÃ¡quina windows de la oficina, en donde ya sÃ© que la
+# codificaciÃ³n de caracteres es WIN1252 (en verdad Sys.getlocale() dice
+# "Spanish_Uruguay.1252", pero asumo que es lo mismo y en las pruebas que hice
+# anduvo bien):
+if (grepl("DINAMA-OAN11", Sys.info()["nodename"], ignore.case = TRUE)) {
+  # DBI::dbExecute(con, "SET CLIENT_ENCODING TO 'WIN1252';")
+  DBI::dbExecute(con, "SET NAMES 'WIN1252';")
+}
+
 # Todas las muestras de todos los programas en el aÃ±o 2019:
 consulta_muestras(con, fecha_ini = "2019-12-24", fecha_fin = "2019-12-31")
 consulta_muestras(con, id_programa = 1L,
                   id_estacion = c(100054L, 100061L, 100063L, 100172L),
                   id_parametro = c(2009L, 2020L),
                   fecha_ini = "2017-10-31", fecha_fin = "2019-10-31")
+}
+\seealso{
+\code{\link{sia_datos_muestra_parametros}}, \code{\link{sia_muestra}}, \code{\link{clasif_tipo_dato}}, \code{\link{valores}}, \code{\link{sia_datos_muestra_parametros}}, \code{\link{sia_datos_muestra_parametros}}
 }

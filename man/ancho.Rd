@@ -16,7 +16,7 @@ posiblemente modificada con valores_numericos y con columnas agregadas por
 }
 \description{
 Ensanchar datos provenientes de consulta_muestras. Espera la presencia de
-ciertas columnas. Ver detalles.
+ciertas columnas y una sóla matriz ambiental. Ver detalles.
 }
 \details{
 Espera que existan las columnas 'valor' y 'param'. En caso de no
@@ -31,4 +31,17 @@ Para facilitar la compatibilidad, esta función además verifica la presencia
 de otras columnas agregadas en el código de la app iSIA (en el reactive
 \code{datos_extraccion}, del server.R): codigo_nuevo, parametro, grupo,
 id_tipo_dato y tipo_dato.
+}
+\examples{
+d <- dplyr::filter(datos_sia, id_matriz == 6L) \%>\%
+  dplyr::select(-parametro, -id_tipo_dato, -tipo_dato, -grupo, -codigo_nuevo)
+ancho(d)
+
+# CÃ³mo usar ancho en lugar de ancho_old:
+datos_sia \%>\%
+  # Primero filtrar para tener sÃ³lo 2 parÃ¡metros:
+  dplyr::filter(id_programa == 4, id_parametro \%in\% c(2017, 2021)) \%>\%
+  ancho \%>\%
+  select(matches("^SatO |^OD ")) \%>\%
+  plot
 }

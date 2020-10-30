@@ -10,7 +10,8 @@
 #'
 #' Fecha de extraccion: 2020-10-29
 #'
-#' @format Tabla con 17749 filas y 11 columnas:
+#' @format Tabla con `r nrow(sia_muestra)` filas y `r ncol(sia_muestra)`
+#'   columnas:
 #'
 #'   \describe{
 #'
@@ -63,7 +64,8 @@
 #' @section Valores: Los valores almacenados en la tabla no necesariamente
 #'   expresan valores numéricos. Las funciones \code{\link{clasif_tipo_dato}} y
 #'
-#' @format Tabla con 237957 filas y 17 columnas:
+#' @format Tabla con `r nrow(sia_datos_muestra_parametros)` filas y
+#'   `r ncol(sia_datos_muestra_parametros)` columnas:
 #'
 #'   \describe{
 #'
@@ -122,9 +124,10 @@
 #'
 #' Fecha de extraccion: 2020-10-22
 #'
-#' @format Tabla con 21 filas y 3 columnas:
+#' @format Tabla con `r nrow(sia_departamento)` filas y
+#'   `r ncol(sia_departamento)` columnas:
 #'
-#' \describe{
+#'   \describe{
 #'
 #'   \item{id}{}
 #'
@@ -132,7 +135,7 @@
 #'
 #'   \item{dep_codigo}{Código o abreviación del nombre del departamento}
 #'
-#' }
+#'   }
 #'
 #' @source \code{infambientalbd}
 "sia_departamento"
@@ -150,7 +153,8 @@
 #'
 #' Fecha de extraccion: 2020-10-22
 #'
-#' @format Tabla con 433 filas y 17 columnas:
+#' @format Tabla con `r nrow(sia_estacion)` filas y `r ncol(sia_estacion)`
+#'   columnas:
 #'
 #'   \describe{
 #'
@@ -196,7 +200,7 @@
 #'
 #'   \item{estacion_activa}{..completar..}
 #'
-#' }
+#'   }
 #'
 #' @source \code{infambientalbd}
 "sia_estacion"
@@ -209,15 +213,16 @@
 #'
 #' Fecha de extraccion: 2020-10-22
 #'
-#' @format Tabla con 27 filas y 2 columnas:
+#' @format Tabla con `r nrow(sia_institucion)` filas y `r ncol(sia_institucion)`
+#'   columnas:
 #'
-#' \describe{
+#'   \describe{
 #'
 #'   \item{id_institucion}{Número único (natural) para cada institución.}
 #'
 #'   \item{nombre}{Nombre de la institución (texto).}
 #'
-#' }
+#'   }
 #'
 #' @source \code{infambientalbd}
 "sia_institucion"
@@ -231,7 +236,7 @@
 #'
 #' Fecha de extraccion: 2020-10-22
 #'
-#' @format Tabla de 15 filas y 5 columnas:
+#' @format Tabla con `r nrow(sia_matriz)` filas y `r ncol(sia_matriz)` columnas:
 #'
 #' \describe {
 #'
@@ -260,9 +265,10 @@
 #'
 #' Fecha de extraccion: 2020-10-22
 #'
-#' @format Tabla de 1321 filas y 4 columnas:
+#' @format Tabla con `r nrow(sia_param_unidad)` filas y
+#'   `r ncol(sia_param_unidad)` columnas:
 #'
-#' \describe {
+#'   \describe {
 #'
 #'   \item{id}{identificador único para las entradas de esta tabla (i.e.:
 #'   combinaciones de `id_unidad_medida`, `id_parametro` e `id_matriz`)}
@@ -275,7 +281,7 @@
 #'   \item{id_matriz}{Número que indica el id de la matriz ambiental
 #'   correspondiente}
 #'
-#' }
+#'   }
 #'
 #' @source \code{infambientalbd}
 "sia_param_unidad"
@@ -290,7 +296,8 @@
 #'
 #' Fecha de extraccion: 2020-10-22
 #'
-#' @format Tabla de 356 filas y 7 columnas:
+#' @format Tabla con `r nrow(sia_parametro)` filas y `r ncol(sia_parametro)`
+#'   columnas:
 #'
 #'   \describe{
 #'
@@ -310,7 +317,7 @@
 #'
 #'   \item{codigo_airviro}{..completar..}
 #'
-#' }
+#'   }
 #'
 #' @source \code{infambientalbd}
 "sia_parametro"
@@ -325,23 +332,24 @@
 #'
 #' Fecha de extraccion: 2020-10-22
 #'
-#' @format Tabla de 32 filas y 6 columnas:
+#' @format Tabla con `r nrow(sia_programa)` filas y `r ncol(sia_programa)`
+#'   columnas:
 #'
-#' \describe{
+#'   \describe{
 #'
-#' \item{id_programa}{\code{integer}. Número único para cada programa.}
+#'   \item{id_programa}{\code{integer}. Número único para cada programa.}
 #'
-#' \item{nombre_programa}{Nombre (largo) del programa de monitoreo}
+#'   \item{nombre_programa}{Nombre (largo) del programa de monitoreo}
 #'
-#' \item{codigo_programa}{Código (corto) que identifica a cada programa}
+#'   \item{codigo_programa}{Código (corto) que identifica a cada programa}
 #'
-#' \item{visible_externos}{..completar..}
+#'   \item{visible_externos}{..completar..}
 #'
-#' \item{version}{..completar..}
+#'   \item{version}{..completar..}
 #'
-#' \item{id_programa_silad}{..completar..}
+#'   \item{id_programa_silad}{..completar..}
 #'
-#' }
+#'   }
 #'
 #' @source \code{infambientalbd}
 "sia_programa"
@@ -355,7 +363,8 @@
 #'
 #' Fecha de extraccion: 2020-10-22
 #'
-#' @format Tabla con 1458 filas y 3 columnas:
+#' @format Tabla con `r nrow(sia_programa_parametro)` filas y
+#'   `r ncol(sia_programa_parametro)` columnas:
 #'
 #'   \describe{
 #'
@@ -365,7 +374,7 @@
 #'
 #'   \item{id_parametro}{Identificador de parametro}
 #'
-#' }
+#'   }
 #'
 #' @source \code{infambientalbd}
 "sia_programa_parametro"
@@ -379,7 +388,8 @@
 #'
 #' Fecha de extraccion: 2020-10-22
 #'
-#' @format Tabla con 2 entradas y 3 columnas:
+#' @format Tabla con `r nrow(sia_tipo_punto_estacion)` filas y
+#'   `r ncol(sia_tipo_punto_estacion)` columnas:
 #'
 #'   \describe{
 #'
@@ -391,12 +401,12 @@
 #'   \item{tip_pun_est_codigo}{Identificador único (númerico) del tipo de punto:
 #'   superficie o fondo (1 o 2 respectivamente)}
 #'
-#' }
+#'   }
 #'
 #' @source \code{infambientalbd}
 "sia_tipo_punto_estacion"
 
-## . t_eti_base ----
+## . sia_unidad ----
 
 #' Lista de las unidades de medidas contempladas por el SIA
 #'
@@ -406,7 +416,7 @@
 #'
 #' Fecha de extraccion: 2020-10-22
 #'
-#' @format Tabla con 1321 filas y 4 columnas:
+#' @format Tabla con `r nrow(sia_unidad)` filas y `r ncol(sia_unidad)` columnas:
 #'
 #'   \describe{
 #'
@@ -423,15 +433,50 @@
 
 ## AGREGADAS ----
 
+# . programa_matriz ----
+
+#' Matrices de programas
+#'
+#' Creada a partir de la tabla \code{\link{sia_estacion}}. Sirve de referencia
+#' para asociar programas de monitoreo con matrices ambientales.
+#'
+#' @seealso \code{\link{sia_estacion}}
+#'
+#' @format Tabla con `r nrow(programa_matriz)` filas y `r ncol(programa_matriz)`
+#'   columnas:
+#'
+#'   \describe{
+#'
+#'   \item{id_parametro}{integer. Identificador único de cada programa de
+#'   monitoreo.}
+#'
+#'   \item{id_matriz}{Número que indica el id de la matriz asociada al programa
+#'   de monitoreo (de momento: 6 = Aguas superficiales y 11 = Sedimentos;
+#'   15/10/2020)}
+#'
+#'   }
+#'
+#' @source \code{infambientalbd}
+#'
+#' @examples
+#' # Crear una versión actualizada de la tabla:
+#' programa_matriz <-
+#'   sia_estacion %>%
+#'     dplyr::distinct(prog_monitoreo, matriz_estacion) %>%
+#'     setNames(c("id_programa", "id_matriz")) %>%
+#'     dplyr::filter_all(~ !is.na(.))
+"programa_matriz"
+
 ## . t_eti_base ----
 
 #' Tabla de etiquetas base
 #'
-#' Creada con \code{\link{make_t_eti_base()}}
+#' Tabla de base para hacer etiquetas para gráficos u otros usos,
+#' basándose en las tablas del SIA (infambientalbd).
 #'
 #' Fecha de creación: 2020-10-29
 #'
-#' @format Tabla con 302 filas y 2 columnas:
+#' @format Tabla con `r nrow(t_eti_base)` filas y `r ncol(t_eti_base)` columnas:
 #'
 #'   \describe{
 #'
@@ -442,6 +487,20 @@
 #' }
 #'
 #' @source \code{infambientalbd}
+#'
+#' @examples
+#' # Código de creación:
+#' t_eti_base <-
+#'   sia_parametro %>%
+#'   dplyr::left_join(dplyr::select(codigos_param, id_parametro, codigo_nuevo),
+#'                    by = "id_parametro") %>%
+#'   dplyr::mutate(param = dplyr::if_else(is.na(codigo_nuevo),
+#'                                        nombre_clave, codigo_nuevo)) %>%
+#'   dplyr::left_join(sia_param_unidad, by = "id_parametro") %>%
+#'   dplyr::filter(id_matriz == 6L) %>%
+#'   dplyr::left_join(sia_unidad, by = c("id_unidad_medida" = "id")) %>%
+#'   dplyr::transmute(id_parametro,
+#'                    etiqueta = paste0(param, " (", uni_nombre, ")"))
 "t_eti_base"
 
 ## . codigos_param ----
@@ -453,7 +512,8 @@
 #'
 #' Última modificación: 2020-09-03
 #'
-#' @format Tabla con 255 filas y 7 columnas:
+#' @format Tabla con `r nrow(codigos_param)` filas y `r ncol(codigos_param)`
+#'   columnas:
 #'
 #'   \describe{
 #'
@@ -486,7 +546,7 @@
 #'
 #' Última modificación: 2020-10-15
 #'
-#' @format Tabla con 231702 filas y 38 columnas:
+#' @format Tabla con `r nrow(datos_sia)` filas y `r ncol(datos_sia)` columnas:
 #'
 #'   \describe{
 #'
@@ -578,23 +638,24 @@
 #'   especificado en "Método".}
 #'
 #'   \item{id_tipo_dato}{Es un número asignado a cada valor. Se trata de una
-#'   clasificación de cada dato según siete categorías:
+#'   clasificación de cada dato según siete categorías (ver también
+#'   \code{\link{tipos_de_dato}}):
 #'
 #'   \enumerate{
 #'
-#'     1. `Numérico`
+#'   1. `Numérico`
 #'
-#'     2. `<LD`
+#'   2. `<LD`
 #'
-#'     3. `<LC`
+#'   3. `<LC`
 #'
-#'     4. `LD<X<LC`
+#'   4. `LD<X<LC`
 #'
-#'     5. `<X`
+#'   5. `<X`
 #'
-#'     6. `>X`
+#'   6. `>X`
 #'
-#'     7. `Otros`
+#'   7. `Otros`
 #'
 #'   }
 #'
@@ -615,4 +676,213 @@
 #'   parámetros tienen un código nuevo propuesto.}
 #'
 #'   }
+#'
+#' @seealso \code{\link{tipos_de_dato}}, \code{\link{consulta_muestras}},
+#'   \code{\link{codigos_params}}
+#'
+#' @source \code{infambientalbd}
 "datos_sia"
+
+## . tipos_de_dato -----
+
+#' Tabla tipos de dato
+#'
+#' Esta tabla registra los tipos de dato encontrados en infambientalbd
+#' (específicamente, en la columna `valor_minimo_str` de la tabla
+#' \code{\link{sia_datos_muestra_parametros}}).
+#'
+#' Se espera que los tipos de dato (columna `tipo_dato`) se autoexpliquen. En
+#' particular, las categorías `<X` y `>X` refieren a casos en los que se X es un
+#' valor numérico, como "<2.0" o ">5000".
+#'
+#' @seealso \code{\link{clasif_tipo_dato}}
+#'
+#' @format Tabla con 7 filas y 2 columnas:
+#'
+#'   \describe{
+#'
+#'   \item{tipo_dato}{character. Nombre de las categorías (tipos) de datos.}
+#'
+#'   \item{id_tipo_dato}{integer. Id, número único entero que identifica a cada
+#'   tipo de dato}
+#'
+#'   }
+#'
+#' @examples
+#' # Para crear la tabla:
+#' tipos_de_dato <- tibble::tibble(
+#'   tipo_dato = c("NUMERICO", "<LD", "<LC", "LD<X<LC", "<X", ">X", "OTRO"),
+#'   id_tipo_dato = 1:7
+#' )
+"tipos_de_dato"
+
+## . decreto -----
+
+#' Valores establecidos por el Decreto 253/79
+#'
+#' Tabla con valores mínimos y máximos establecidos por el
+#' \href{https://www.impo.com.uy/bases/decretos/253-1979}{decreto 253/79}.
+#'
+#' Los valores de `id_parametro`` en esta tabla se asignaron por aproximación.
+#'
+#' ## id_metodo
+#'
+#' La columna `id_metodo` refiere a distintas formas de definir si se cumple o
+#' no con el criterio establecido por el decreto. La mayoría de los casos
+#' corresponden al método 1 (muestra única), y la mayoría de las variantes se
+#' incluyen en función de los diferentes métodos establecidos para el parámetro
+#' "Bacterias Coliformes" (asociado al TermoTMF, `id_parametro` = 2111 en
+#' \code{\link{sia_parametro}}).
+#'
+#' La idea es que cada combinación única de `id_parametro` x `id_metodo`
+#' funcione, en los hechos, como un parámetro diferenciado. Por ejemplo, las
+#' Bacterias Coliformes medidas en su media geométrica (método 2) sería un
+#' parámetro diferente a Bacterias Coliformes medidas según si en el 80 \% de
+#' los caso está por debajo del límite establecido. Esto es consistente con el
+#' criterio del SIA de separar parámetros según las unidades de medida asociadas
+#' (ej.: TermoTMF y TermoTTM, corresponden ambos a Bacterias Termotolerantes
+#' medidas en Membrana Filtrante y Tubos Múltiples, respectivamente).
+#'
+#' Las opciones de `id_metodo` son:
+#'
+#' \enumerate{
+#'
+#' \item{Medición simple: el valor establecido por el decreto es comparado con
+#' una única muestra. Coliformes: se incluyen casos en los que el decreto
+#' requiere al menos 5 medidas, determinando que ninguna de estas puede superar
+#' el valor establecido. Ejemplo: en Coliformes en clase de aguas 1, ninguna
+#' medida puede superar las 2000 ufc/100mL.}
+#'
+#' \item{Media geométrica de al menos 5 muestras}
+#'
+#' \item{80% de los valores, en al menos 5 muestras, deben estar por debajo de
+#' este límite.}
+#'
+#' \item{En este caso, se deben sumar los valores de varios parámetros. Ejs.:
+#' Endosulfán alfa y beta, Clordano-cis y Clordano-trans, y otros casos en que
+#' se trata de isómeros conformacionales.}
+#'
+#' }
+#'
+#' NOTAR: Que hasta el momento (2020-10-30) los métodos de evaluación
+#' desarrollados por las aplicaciones Shiny
+#' \href{http://dinama-shiny:3838/sia_apps}{sia_apps} no están capacitados para
+#' evaluar parámetros que no utilicen el método 1. Ampliar estas capacidades
+#' puede implicar múltiples evaluaciones por parámetro, como determinar si hay
+#' efectivamente al menos 5 muestras, para luego determinar si cumplen con una
+#' media geométrica adecuada.
+#'
+#' ## Respecto al método 4:
+#'
+#' Casos simples como alfa y beta endosulfan o clordano cis y trans, que son
+#' isómeros conformacionales y sería correcto sumarlos, cosiderando el valor
+#' suma, para comparar con el valor de la normativa.
+#'
+#' El caso del endosulfan sulfato, es un producto de degradación del endosulfán
+#' y creo que no es correcto sumarlo. Es similar al AMPA, que es producto de la
+#' degradación del Glifosato. Si se van a sumar, se tendría que aclarar, ya que
+#' químicamente es bastante "turbio" hacer una suma. También está el caso del
+#' DDT que tiene dos isomeros, op y pp. Que también tiene sus productos de
+#' degradación DDD y DDE (cuando pierde 1 y 2 Cloros) con sus respectivos
+#' isomeros op y pp. En este caso, cada par de isomeros se tendría que sumar,
+#' pero cada par por separado. En el caso del heptaclor y heptaclor epóxido, se
+#' pide la suma (253/79), asi que estaría sumando el plaguicida y su producto de
+#' degradación.
+#'
+#' Otro ejemplo es el Lindano (que es el gamma HCH), el HCH tiene 4 isómeros
+#' mas, alpha, beta, delta y epsilon, que en la práctica, comúnmente se analizan
+#' por separado y el mas importante es el Lindano, seguramente por su mayor
+#' toxicidad o persistencia en el ambiente. Este es un caso en que sus isómeros
+#' no se suman. Creo que por convención...
+#'
+#' Cada normativa puede tener criterios distintos, por ejemplo, se puede poner
+#' un límite para el Aldrin y Dieldrin  sumados, y dejar al Endrin afuera. Otra,
+#' sumar todos los isómeros de DDT, DDD y DDE...
+#'
+#' En resumen, los isómeros se suman, los productos de degradación no. Salvo que
+#' se aclare en la normativa o exista una convención al respecto.
+#'
+#' @format Tabla con `r nrow(decreto)` filas y `r ncol(decreto)` columnas:
+#'
+#'   \describe{
+#'
+#'   \item{param_decreto}{`character`. Nombre del parámetro tal como figuran en
+#'   el texto original del decreto, incluyendo las unidades de medida}
+#'
+#'   \item{id_parametro}{`integer`. Id, número único entero que identifica a
+#'   cada parámetro}
+#'
+#'   \item{id_metodo}{`integer`. Id, número único entero que identifica a cada
+#'   método (ver detalles)}
+#'
+#'   \item{coef_conversion}{`numeric`. Coeficiente de conversión para convertir
+#'   `valor` a las unidades de medida establecidas por SIA para el parámetro,
+#'   multiplicando `valor` x `coef_conversion`.}
+#'
+#'   \item{obs}{`character`. Observaciones}
+#'
+#'   \item{clase}{`character`. Clase de agua definida en el decreto 253/79.}
+#'
+#'   \item{extremo}{`character`. Determina si se trata de el mínimo o el máximo
+#'   permitido para el parámetro.}
+#'
+#'   \item{valor}{`numeric`. Valor original para el límite establecido por el
+#'   decreto.}
+#'
+#'   }
+#'
+#' @examples
+#' # Al momento se usan solamente los casos en los que id_metodo == 1, por lo
+#' # que típicamente al inicio de scripts se agregan estas líneas:
+#' decreto <-
+#'   dplyr::mutate(decreto, valor = valor * coef_conversion) %>%
+#'   dplyr::filter(id_parametro != 2111L | id_metodo == 1L)
+"decreto"
+
+
+## . reglas ----
+
+#' Reglas de comparación para pares de parámetros
+#'
+#' Esta lista almacena reglas (funciones) que sirven para evaluar datos del SIA.
+#'
+#' @format Lista con `r length(reglas)` elementos, cada uno con la siguiente
+#'   estructura:
+#'
+#'   \describe{
+#'
+#'   \item{regla}{character. Texto que describe la regla. Ej.: "`PT (ug P/L)` >
+#'   `PO4 (ug PO4-P/L)`"}
+#'
+#'   \item{mensaje}{character. Frase que se utiliza en caso de que **no** se
+#'   cumpla la regla.}
+#'
+#'   \item{id_parametro}{integer. Vector con 2 o más id de parámetros}
+#'
+#'   \item{fun}{function. Función que acepta una \code{\link[base]{data.frame}}}
+#'   como único argumento, y en la que las columnas se corresponden con los
+#'   parámetros correspondientes (en el mismo orden)}
+#'
+#'   }
+#'
+#' @examples
+#' # Veamos las reglas relativas a OD vs SatO2:
+#' reglas$od_sat_min
+#' reglas$od_sat_max
+#'
+#' # Evaluemos esta regla para todos los datos de infambientalbd:
+#' d <- datos_sia %>%
+#'   dplyr::filter(id_matriz == 6L, id_parametro %in% c(2017L, 2021L)) %>%
+#'   ancho %>%
+#'   # El orden de los parámetros es importante!:
+#'   dplyr::select(tidyselect::starts_with("OD "),
+#'                 tidyselect::starts_with("SatO "))
+#'
+#' d$od_alto <- !reglas$od_sat_max$fun(d)
+#' d$od_bajo <- !reglas$od_sat_min$fun(d)
+#' # Voila!:
+#' dplyr::filter(d, !is.na(od_alto), od_alto | od_bajo)
+"reglas"
+
+#' Tabla con rangos de valores normales para parámetros
+"lim"

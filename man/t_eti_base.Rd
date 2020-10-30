@@ -22,9 +22,24 @@ Tabla con 302 filas y 2 columnas:
 t_eti_base
 }
 \description{
-Creada con \code{\link{make_t_eti_base()}}
+Tabla de base para hacer etiquetas para gráficos u otros usos,
+basándose en las tablas del SIA (infambientalbd).
 }
 \details{
 Fecha de creación: 2020-10-29
+}
+\examples{
+# CÃ³digo de creaciÃ³n:
+t_eti_base <-
+  sia_parametro \%>\%
+  dplyr::left_join(dplyr::select(codigos_param, id_parametro, codigo_nuevo),
+                   by = "id_parametro") \%>\%
+  dplyr::mutate(param = dplyr::if_else(is.na(codigo_nuevo),
+                                       nombre_clave, codigo_nuevo)) \%>\%
+  dplyr::left_join(sia_param_unidad, by = "id_parametro") \%>\%
+  dplyr::filter(id_matriz == 6L) \%>\%
+  dplyr::left_join(sia_unidad, by = c("id_unidad_medida" = "id")) \%>\%
+  dplyr::transmute(id_parametro,
+                   etiqueta = paste0(param, " (", uni_nombre, ")"))
 }
 \keyword{datasets}

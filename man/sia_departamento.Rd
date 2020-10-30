@@ -5,7 +5,8 @@
 \alias{sia_departamento}
 \title{Lista de departamentos}
 \format{
-Tabla con 21 filas y 3 columnas:
+Tabla con 21 filas y
+3)` columnas:
 
 \describe{
 

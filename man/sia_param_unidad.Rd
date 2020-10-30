@@ -5,7 +5,8 @@
 \alias{sia_param_unidad}
 \title{Lista de correspondencias entre parámetros y unidades}
 \format{
-Tabla de 1321 filas y 4 columnas:
+Tabla con 1321 filas y
+4)` columnas:
 
 \describe {
 

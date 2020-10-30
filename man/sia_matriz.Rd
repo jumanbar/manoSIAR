@@ -5,7 +5,7 @@
 \alias{sia_matriz}
 \title{Lista de matrices ambientales}
 \format{
-Tabla de 15 filas y 5 columnas:
+Tabla con 15 filas y 5 columnas:
 
 \describe {
 

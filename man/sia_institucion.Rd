@@ -5,7 +5,8 @@
 \alias{sia_institucion}
 \title{Lista de instituciones}
 \format{
-Tabla con 27 filas y 2 columnas:
+Tabla con 27 filas y 2
+columnas:
 
 \describe{
 

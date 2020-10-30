@@ -25,7 +25,7 @@ Graficar valores anuales por estacion
 }
 \examples{
 d <- readRDS("tmp/datos_cuareim.rds")
-decreto_long <- readRDS("../data/decreto_long.rds")
+decreto <- readRDS("../data/decreto.rds")
 d$mes <- as.integer(d$mes)
 d$anio <- as.integer(d$anio)
 g_par_esp(d, 2032, 2019L, horiz = c(min = 5, max = 28))

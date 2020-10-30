@@ -5,7 +5,8 @@
 \alias{sia_tipo_punto_estacion}
 \title{Tipo de estacion}
 \format{
-Tabla con 2 entradas y 3 columnas:
+Tabla con 2 filas y
+3)` columnas:
 
 \describe{
 

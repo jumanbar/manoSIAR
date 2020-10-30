@@ -5,7 +5,8 @@
 \alias{sia_muestra}
 \title{Inventario de muestras de infambientalbd}
 \format{
-Tabla con 17749 filas y 11 columnas:
+Tabla con 17749 filas y 11
+columnas:
 
 \describe{
 

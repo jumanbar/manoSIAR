@@ -8,17 +8,31 @@ filtrar_datos(
   .data,
   id_programa = 4L,
   id_matriz = 6L,
-  rango_fechas = c("2019-01-10", "2019-12-31"),
-  id_parametro = c(2032, 2098, 2101, 2017, 2018, 2009, 2000, 2198),
+  rango_fechas = NULL,
+  id_parametro = NULL,
   id_estacion = NULL,
-  niveles_est = NULL
+  orden_est = NULL
 )
 }
 \arguments{
 \item{.data}{Tabla con datos extraidos del SIA (\code{\link{datos_sia}} en
 principio)}
 
-\item{niveles_est}{}
+\item{id_programa}{integer. Un sólo valor que identifica al programa.}
+
+\item{id_matriz}{integer. Un sólo valor que identifica a la matriz.}
+
+\item{rango_fechas}{character. Vector de dos valores (fecha inicial y fecha
+final), en formato \code{AAAA-MM-DD}.}
+
+\item{id_parametro}{integer. Vector de valores que identifican los
+parámetros.}
+
+\item{id_estacion}{integer. Vector de valores que identifican las estaciones
+(sitios) de monitoreo.}
+
+\item{orden_est}{character. Vector con los nombres de las estaciones en el
+orden deseado para las gráficas u otros usos.}
 }
 \value{
 

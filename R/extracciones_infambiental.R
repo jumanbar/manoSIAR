@@ -1,34 +1,7 @@
-#' Conexión con SIA
-#'
-#' @return
-#' @export
-#'
-#' @examples
-con_sia <- function() {
-  library(RPostgreSQL)
-  # BASE DE DATOS SIA
-  drv <- dbDriver("PostgreSQL")
-
-  # *
-  pw <- {
-    "shiny_passwd"
-  }
-  out <- dbConnect(drv, dbname = "infambientalbd",
-                   host = "172.20.0.34", port = 5432,
-                   user = "shiny_usr", password = pw)
-
-  if (grepl("DINAMA-OAN11", Sys.info()["nodename"], ignore.case = TRUE)) {
-    # dbExecute(con, "SET CLIENT_ENCODING TO 'WIN1252';")
-    dbExecute(out, "SET NAMES 'WIN1252';")
-  }
-
-  return(out)
-}
-
 #' Formato ancho
 #'
 #' Ensanchar datos provenientes de consulta_muestras. Espera la presencia de
-#' ciertas columnas. Ver detalles.
+#' ciertas columnas y una sóla matriz ambiental. Ver detalles.
 #'
 #' @param .data Tabla de datos obtenida con \code{\link{consulta_muestras}},
 #'   posiblemente modificada con valores_numericos y con columnas agregadas por
@@ -52,8 +25,28 @@ con_sia <- function() {
 #' @return
 #' @export
 #'
+#' @importFrom magrittr %>%
+#'
 #' @examples
+#' d <- dplyr::filter(datos_sia, id_matriz == 6L) %>%
+#'   dplyr::select(-parametro, -id_tipo_dato, -tipo_dato, -grupo, -codigo_nuevo)
+#' ancho(d)
+#'
+#' # Cómo usar ancho en lugar de ancho_old:
+#' datos_sia %>%
+#'   # Primero filtrar para tener sólo 2 parámetros:
+#'   dplyr::filter(id_programa == 4, id_parametro %in% c(2017, 2021)) %>%
+#'   ancho %>%
+#'   select(matches("^SatO |^OD ")) %>%
+#'   plot
 ancho <- function(.data) {
+
+  matrices <- unique(.data$id_matriz)
+  if (length(matrices) > 1) {
+    stop('Los datos tienen más de un valor de id_matriz: ',
+         colapsar_secuencia(matrices),
+         '. Sugerencia: filtrar datos con dplyr::filter o "["')
+  }
 
   if (!any(names(.data) == 'valor')) {
     warning('Se creó automáticamente la columna: valor = valor_minimo_str.')
@@ -78,17 +71,17 @@ ancho <- function(.data) {
   }
 
   out <- .data %>%
-    mutate(LD = limite_deteccion %>%
-             str_trim() %>%
-             str_replace_all("[.,]+", ".") %>%
+    dplyr::mutate(LD = limite_deteccion %>%
+             stringr::str_trim() %>%
+             stringr::str_replace_all("[.,]+", ".") %>%
              as.numeric(),
            LC = limite_cuantificacion %>%
-             str_trim() %>%
-             str_replace_all("[.,]+", ".") %>%
+             stringr::str_trim() %>%
+             stringr::str_replace_all("[.,]+", ".") %>%
              as.numeric()) %>%
-    select(-id_parametro:-limite_cuantificacion, valor) %>%
-    pivot_wider(names_from = param, values_from = c(valor, LD, LC)) %>%
-    arrange(id_muestra)
+    dplyr::select(-id_parametro:-limite_cuantificacion, valor) %>%
+    tidyr::pivot_wider(names_from = param, values_from = c(valor, LD, LC)) %>%
+    dplyr::arrange(id_muestra)
 
   nombres <- names(out)
   m <- matrix(c(grep("^valor_", nombres),
@@ -101,21 +94,22 @@ ancho <- function(.data) {
   out <- out[c(1:(i[1] - 1), i)]
 
   out <- out %>%
-    rename_at(vars(starts_with('valor_')),
-              ~ str_remove_all(., '^valor_')) %>%
-    rename_at(vars(matches('^L[DC]')),
-              ~ str_remove_all(., '\\s+\\(.*\\)$') %>%
-                str_replace_all('(L[CD])_(.*)', '\\2_\\1'))
+    dplyr::rename_at(dplyr::vars(tidyselect::starts_with('valor_')),
+                     ~ stringr::str_remove_all(., '^valor_')) %>%
+    dplyr::rename_at(dplyr::vars(tidyselect::matches('^L[DC]')),
+                     ~ stringr::str_remove_all(., '\\s+\\(.*\\)$') %>%
+                       stringr::str_replace_all('(L[CD])_(.*)', '\\2_\\1'))
 
   return(out)
 }
 
 #' Formato ancho para 2 parámetros
 #'
-#' **OBSOLETA** (aunque se sigue usando de momento)
+#' **OBSOLETA** (aunque se sigue usando de momento). Usar en cambio
+#' \code{\link{ancho}}, habiendo previamente filtrado los datos a 2 parámetros.
 #'
-#' Aplicar pivot_wider para datos provenientes de consulta_muestras,
-#' pero con ciertas precauciones...
+#' Aplicar pivot_wider para datos provenientes de consulta_muestras, pero con
+#' ciertas precauciones...
 #'
 #' @param .data data.frame: Datos como vienen del SIA
 #' @param id_x integer: id_parametro "X". Ejemplo: 2098 (PT)
@@ -128,25 +122,31 @@ ancho <- function(.data) {
 #' @export
 #'
 #' @examples
+#' # Cómo usar ancho en lugar de ancho_old:
+#' datos_sia %>%
+#'   # Primero filtrar para tener sólo 2 parámetros:
+#'   dplyr::filter(id_programa == 4, id_parametro %in% c(2017, 2021)) %>%
+#'   ancho %>%
+#'   select(matches("^SatO |^OD ")) %>%
+#'   plot
 ancho_old <- function(.data, id_x, id_y,
                       par_x = NULL, par_y  = NULL,
                       e_sel = TRUE) {
-  require(tidyverse)
 
-  # save(.data, id_x, id_y, par_x, par_y, e_sel, file = "tmp/tmp.RData")
-
-  repes <- .data %>% count(id_muestra, id_parametro) %>% dplyr::filter(n > 1)
+  repes <- .data %>%
+    dplyr::count(id_muestra, id_parametro) %>%
+    dplyr::filter(n > 1)
 
   if (is.null(par_x)) {
     par_x <- sia_parametro %>%
       dplyr::filter(id_parametro == id_x) %>%
-      pull(nombre_clave)
+      dplyr::pull(nombre_clave)
   }
 
   if (is.null(par_y)) {
     par_y <- sia_parametro %>%
       dplyr::filter(id_parametro == id_y) %>%
-      pull(nombre_clave)
+      dplyr::pull(nombre_clave)
   }
 
   # A continuación: si es que hay repetidos, quedarme sólo con los que
@@ -172,15 +172,15 @@ ancho_old <- function(.data, id_x, id_y,
 
   .data_x <- .data %>%
     dplyr::filter(id_parametro == id_x) %>%
-    rename(!!sym(par_x) := valor) %>%
-    select(-id_estado, -nombre_clave, -id_parametro, -observaciones,
-           -valor_minimo_str, -limite_deteccion, -limite_cuantificacion)
+    dplyr::rename(!!dplyr::sym(par_x) := valor) %>%
+    dplyr::select(-id_estado, -nombre_clave, -id_parametro, -observaciones,
+                  -valor_minimo_str, -limite_deteccion, -limite_cuantificacion)
 
   .data_y <- .data %>%
     dplyr::filter(id_parametro == id_y) %>%
-    rename(!!sym(par_y) := valor) %>%
-    select(-id_estado, -nombre_clave, -id_parametro, -observaciones,
-           -valor_minimo_str, -limite_deteccion, -limite_cuantificacion)
+    dplyr::rename(!!sym(par_y) := valor) %>%
+    dplyr::select(-id_estado, -nombre_clave, -id_parametro, -observaciones,
+                  -valor_minimo_str, -limite_deteccion, -limite_cuantificacion)
 
   v_by <- c("id_muestra", "nombre_programa", "id_programa",
             "codigo_pto", "id_estacion", "id_depto", "departamento",
@@ -190,8 +190,8 @@ ancho_old <- function(.data, id_x, id_y,
   if (e_sel) v_by <- c(v_by, "est_sel")
 
   .data_final <-
-    full_join(.data_x, .data_y, by = v_by) %>%
-    arrange(id_muestra, fecha_hora)
+    dplyr::full_join(.data_x, .data_y, by = v_by) %>%
+    dplyr::arrange(id_muestra, fecha_hora)
 
   return(.data_final)
 }
@@ -199,7 +199,7 @@ ancho_old <- function(.data, id_x, id_y,
 #' Asignar categorías a los datos SIA
 #'
 #' Evalúa vector character que expresan valores numéricos, según las categorías
-#' de la tabla \code{tipos_de_dato}.
+#' de la tabla \code{\link{tipos_de_dato}}.
 #'
 #' @param x Character. Específicamente, espera los valores de la columna
 #'   \code{valor_minimo_str} de la tabla \code{datos_muestra_parametros} de la
@@ -221,12 +221,19 @@ ancho_old <- function(.data, id_x, id_y,
 #'   como "LOQ", "LOD" o "ND" (Limit of Quantification, Limit of Detection y No
 #'   Detectado, respectivamente).
 #'
-#' @return Lista con dos elementos: \describe{ \item{valores}{Valores originales
-#'   "limpios" (puntos en vez de comas para decimales y sin espacios en blanco
-#'   al inicio o al final.)} \item{tipos}{Vector integer (de misma longitud que
-#'   \code{x}) con los id de los tipos de datos, tal como se pueden encontrar en
-#'   la tabla \code{tipos_de_dato} (por ahora no está presente en el SIA, sino
-#'   en la carpeta \code{sia_apps/data}).} }
+#' @return Lista con dos elementos:
+#'
+#'   \describe{
+#'
+#'   \item{valores}{Valores originales "limpios" (puntos en vez de comas para
+#'   decimales y sin espacios en blanco al inicio o al final.)}
+#'
+#'   \item{tipos}{Vector integer (de misma longitud que \code{x}) con los id de
+#'   los tipos de datos, tal como se pueden encontrar en la tabla
+#'   \code{tipos_de_dato} (por ahora no está presente en el SIA, sino en la
+#'   carpeta \code{sia_apps/data}).}
+#'
+#'   }
 #'
 #' @export
 #'
@@ -274,13 +281,13 @@ clasif_tipo_dato <- function(x, metodo = "simple") {
     ldxlc <- lc <- ld
   }
 
-  tipos <- case_when(num    ~ 1L,
-                     ld     ~ 2L,
-                     lc     ~ 3L,
-                     ldxlc  ~ 4L,
-                     menorX ~ 5L,
-                     mayorX ~ 6L,
-                     TRUE   ~ 7L)
+  tipos <- dplyr::case_when(num    ~ 1L,
+                            ld     ~ 2L,
+                            lc     ~ 3L,
+                            ldxlc  ~ 4L,
+                            menorX ~ 5L,
+                            mayorX ~ 6L,
+                            TRUE   ~ 7L)
 
   return(list(valores = y, tipos = tipos))
 }
@@ -292,21 +299,21 @@ clasif_tipo_dato <- function(x, metodo = "simple") {
 #'
 #' @param con `PostgreSQLConnection`: objeto utilizado para conectarse con la
 #'   base de datos. Ver details.
-#' @param id_matriz Integer. Valor único. Número de matriz.
-#' @param id_programa Integer. Vector con números id de programas. Si es `NULL`
+#' @param id_matriz integer. Valor único. Número de matriz.
+#' @param id_programa integer. Vector con números id de programas. Si es `NULL`
 #'   (valor por defecto), selecciona todos los programas.
-#' @param id_cuenca Integer. Vector con números de cuenca.
-#' @param id_sub_cuenca Integer. Vector con números de subcuenca.
+#' @param id_cuenca integer. Vector con números de cuenca.
+#' @param id_sub_cuenca integer. Vector con números de subcuenca.
 #' @param id_estacion Integer. Vector con números id de estaciones. Si es `NULL`
 #'   (valor por defecto), selecciona todas las estaciones.
-#' @param id_tipo_punto Integer. Vector con números que identifican el tipo de
+#' @param id_tipo_punto integer. Vector con números que identifican el tipo de
 #'   punto (1. SUPERFICIE, 2. FONDO).
 #' @param id_depto Integer. Vector con números id de departamentos. Si es `NULL`
 #'   (valor por defecto), selecciona todos los departamentos.
-#' @param id_parametro Integer. Vector con números id de parámetros. Si es
+#' @param id_parametro integer. Vector con números id de parámetros. Si es
 #'   `NULL` (valor por defecto), selecciona todos los parámetros.
-#' @param fecha_ini
-#' @param fecha_fin
+#' @param fecha_ini `character`. Fecha en formato `AAAA-MM-DD`.
+#' @param fecha_fin `character`. Fecha en formato `AAAA-MM-DD`.
 #'
 #' @return Una `tibble`, en formato largo, con las columnas:
 
@@ -390,11 +397,13 @@ clasif_tipo_dato <- function(x, metodo = "simple") {
 #'
 #' @details El parámetro `con` es un objeto utilizado para realizar la conexión
 #'   con la base de datos. Específicamente, es llamado por la función
-#'   DBI::dbGetQuery. La creación del objeto se hace en el archivo `global.R`,
-#'   cuyo código está basado en [este ejemplo](https://tinyurl.com/yfl9kvol).
+#'   DBI::dbGetQuery. La creación del objeto normalmente se hace al iniciar el
+#'   servidor shiny de una aplicación (en el archivo `global.R`
+#'   correspondiente), cuyo código está basado en [este
+#'   ejemplo](https://tinyurl.com/yfl9kvol).
 #'
 #'   Los parámetros con el prefijo `id_` refieren al número de id presente en la
-#'   base de datos del SIA infambiental.
+#'   base de datos del SIA infambientalbd.
 #'
 #'   Eliminación de datos repetidos:
 #'
@@ -409,10 +418,24 @@ clasif_tipo_dato <- function(x, metodo = "simple") {
 #'   En caso de que lo anterior no sea suficiente para desambigüar, se usa el id
 #'   más reciente de la tabla `datos_muestra_parametros` y se descarta el resto.
 #'
+#' @seealso \code{\link{sia_datos_muestra_parametros}}, \code{\link{sia_muestra}}, \code{\link{clasif_tipo_dato}}, \code{\link{valores}}, \code{\link{sia_datos_muestra_parametros}}, \code{\link{sia_datos_muestra_parametros}}
 #' @export
 #'
 #' @examples
-#' # source("global.R", encoding = "UTF-8", local = TRUE)
+#' # Conexión con la base de datos:
+#' drv <- DBI::dbDriver("PostgreSQL")
+#' con <- DBI::dbConnect(drv, dbname = "infambientalbd",
+#'                       host = "172.20.0.34", port = 5432,
+#'                       user = "shiny_usr", password = "shiny_passwd")
+#' # Para trabajar en la máquina windows de la oficina, en donde ya sé que la
+#' # codificación de caracteres es WIN1252 (en verdad Sys.getlocale() dice
+#' # "Spanish_Uruguay.1252", pero asumo que es lo mismo y en las pruebas que hice
+#' # anduvo bien):
+#' if (grepl("DINAMA-OAN11", Sys.info()["nodename"], ignore.case = TRUE)) {
+#'   # DBI::dbExecute(con, "SET CLIENT_ENCODING TO 'WIN1252';")
+#'   DBI::dbExecute(con, "SET NAMES 'WIN1252';")
+#' }
+#'
 #' # Todas las muestras de todos los programas en el año 2019:
 #' consulta_muestras(con, fecha_ini = "2019-12-24", fecha_fin = "2019-12-31")
 #' consulta_muestras(con, id_programa = 1L,
@@ -434,14 +457,10 @@ consulta_muestras <- function(con, id_matriz = 6L,
                               fecha_ini = "1900-01-01",
                               fecha_fin = Sys.Date()) {
 
-  require(tidyverse)
-  require(RPostgreSQL)
-  require(lubridate)
-
   fecha_ini <- as.character(fecha_ini)
   fecha_fin <- as.character(fecha_fin)
 
-  x <- is.na(ymd(c(fecha_ini, fecha_fin)))
+  x <- is.na(lubridate::ymd(c(fecha_ini, fecha_fin)))
   if (any(x))
     stop("El formato de las fechas parece estar mal (fecha_ini = ",
          fecha_ini, "; fecha_fin = ", fecha_fin, ")")
@@ -549,15 +568,15 @@ consulta_muestras <- function(con, id_matriz = 6L,
 
   # writeLines(consulta_sql, "consulta_sql.sql")
 
-  consulta_sql <- str_squish(paste(consulta_sql, collapse = " "))
+  consulta_sql <- stringr::str_squish(paste(consulta_sql, collapse = " "))
 
-  out <- dbGetQuery(con, consulta_sql)
+  out <- DBI::dbGetQuery(con, consulta_sql)
 
   if (!nrow(out)) return(NULL)
 
   out <- out %>%
     # set_utf8() %>%
-    as_tibble()
+    tibble::as_tibble()
 
   if (!is.null(anios))
     out <- dplyr::filter(out, anio %in% anios)
@@ -568,7 +587,9 @@ consulta_muestras <- function(con, id_matriz = 6L,
   }
 
   if (any(out$id_estado == 3)) {
-    repes <- out %>% count(id_muestra, id_parametro) %>% dplyr::filter(n > 1)
+    repes <- out %>%
+      dplyr::count(id_muestra, id_parametro) %>%
+      dplyr::filter(n > 1)
 
     # A continuación: si es que hay repetidos, quedarme sólo con los que
     # figuran como aprobados...
@@ -595,7 +616,7 @@ consulta_muestras <- function(con, id_matriz = 6L,
 
   # Casos en los que hay más de un dato para un id_muestra e id_parametro
   # (siempre con TermoTMF, hasta el momento, 2020-07-29):
-  repes <- out %>% count(id_muestra, id_parametro) %>% dplyr::filter(n > 1)
+  repes <- out %>% dplyr::count(id_muestra, id_parametro) %>% dplyr::filter(n > 1)
   if (nrow(repes)) {
     for (i in 1:nrow(repes)) {
       w <- which(
@@ -622,12 +643,16 @@ consulta_muestras <- function(con, id_matriz = 6L,
 #'
 #' @param .data Tabla con datos extraidos del SIA (\code{\link{datos_sia}} en
 #'   principio)
-#' @param id_programa
-#' @param rango_fechas
-#' @param id_matriz
-#' @param id_parametro
-#' @param id_estacion
-#' @param niveles_est
+#' @param id_programa integer. Un sólo valor que identifica al programa.
+#' @param rango_fechas character. Vector de dos valores (fecha inicial y fecha
+#'   final), en formato \code{AAAA-MM-DD}.
+#' @param id_matriz integer. Un sólo valor que identifica a la matriz.
+#' @param id_parametro integer. Vector de valores que identifican los
+#'   parámetros.
+#' @param id_estacion integer. Vector de valores que identifican las estaciones
+#'   (sitios) de monitoreo.
+#' @param orden_est character. Vector con los nombres de las estaciones en el
+#'   orden deseado para las gráficas u otros usos.
 #'
 #' @return
 #'
@@ -639,33 +664,24 @@ consulta_muestras <- function(con, id_matriz = 6L,
 filtrar_datos <- function(.data,
                           id_programa = 4L, # Not NULL!
                           id_matriz = 6L,
-                          rango_fechas = c("2019-01-10", "2019-12-31"),
-                          id_parametro = c(2032, 2098, 2101, 2017,
-                                           2018, 2009, 2000, 2198),
+                          rango_fechas = NULL,
+                          id_parametro = NULL,
                           id_estacion = NULL,
-                          niveles_est = NULL) {
-  require(dplyr)
-  require(magrittr)
-  require(tibble)
-  require(stringr)
+                          orden_est = NULL) {
 
-  if (is.null(id_programa))
-    stop("id_programa espera un único número entero positivo. ",
-         "En cambio se encontró un valor NULL")
+  if (missing(id_programa))
+    stop("id_programa espera un único número entero positivo.")
 
   if (length(id_programa) > 1) {
     id_programa <- id_programa[[1]]
     warning("id_programa espera un único número entero positivo, por lo que ",
-            "se usó solamente el primer elemento")
+            "se usó solamente el primer elemento: ", id_programa)
   }
 
-  if (!is.integer(id_programa)) {
-    id_programa <- abs(as.integer(id_programa))
-    warning("Se coercionó id_programa a un valor entero positivo")
-  }
+  id_programa <- abs(as.integer(id_programa))
 
   mat_e <-
-    dplyr::filter(programa_matriz, prog_monitoreo == id_programa)$id_matriz
+    dplyr::filter(programa_matriz, id_programa == !!id_programa)$id_matriz
 
   if (id_matriz != mat_e) {
     warning("No hay datos de esa matriz ambiental (id_matriz = ", id_matriz,
@@ -674,18 +690,16 @@ filtrar_datos <- function(.data,
     return(.data[0,])
   }
 
-  if (missing(rango_fechas)) {
-    warning("rango_fechas no especificado, se seleccionan ",
-            "datos de 2019 por defecto")
-  }
-
-  if (length(rango_fechas) != 2) {
+  if (is.null(rango_fechas)) {
+    rango_fechas <- c("1900-01-01", as.character(Sys.Date() + 1))
+  } else if (length(rango_fechas) != 2L) {
     stop("rango_fechas debe ser un vector con dos fechas en formato AAAA-MM-DD")
   }
 
-  if (missing(id_parametro)) {
-    warning("id_parametro no especificado, se seleccionan por defecto ",
-            "los parámetros ", colapsar_secuencia(id_parametro))
+  if (is.null(id_parametro)) {
+    id_parametro <- sia_parametro$id_parametro
+    warning("id_parametro no especificado, se seleccionan",
+            "todos los parámetros por defecto")
   }
 
   if (is.null(id_estacion)) {
@@ -693,7 +707,8 @@ filtrar_datos <- function(.data,
       dplyr::filter(sia_estacion, prog_monitoreo == !!id_programa)$id
 
     warning("id_estacion no especificado, se seleccionan por defecto ",
-            "las estaciones ", colapsar_secuencia(id_estacion))
+            "las estaciones correspondientes al programa seleccionado (",
+            "id_programa = ", id_programa, ")")
   } else {
     est_e <- dplyr::filter(sia_estacion, prog_monitoreo == id_programa)$id
     w <- id_estacion %in% est_e
@@ -719,25 +734,221 @@ filtrar_datos <- function(.data,
     left_join(sia_estacion, by = "id") %>%
     pull(codigo_pto)
 
-  if (is.null(niveles_est)) {
-    niveles_est <- stringr::str_sort(esperados, numeric = TRUE)
-    warning("niveles_est no especificado. Se usa orden alfabético & numérico: ",
-            colapsar_secuencia(niveles_est))
+  if (is.null(orden_est)) {
+    orden_est <- stringr::str_sort(esperados, numeric = TRUE)
+    warning("orden_est no especificado. Se usa orden alfabético & numérico: ",
+            colapsar_secuencia(orden_est))
   } else {
-    w <- esperados %in% niveles_est
+    w <- esperados %in% orden_est
     if (!all(w)) {
-      niveles_est <- c(niveles_est, esperados[!w])
+      orden_est <- c(orden_est, esperados[!w])
       warning("Se agregaron las estaciones ",
               colapsar_secuencia(esperados[!w]),
-              " al final de niveles_est")
+              " al final de orden_est")
     }
   }
-  out$codigo_pto <- factor(out$codigo_pto, levels = niveles_est)
+  out$codigo_pto <- factor(out$codigo_pto, levels = orden_est)
 
   tp <- unique(out$tipo_punto_id)
   if (all(tp %in% 1:2))
     warning("El conjunto de datos tiene estaciones de tipo SUPERFICIE y FONDO ",
             "mezcladas (tipo_punto_id = 1 y 2 respectivamente)")
+
+  return(out)
+}
+
+
+#' Convertir valores del SIA en numéricos
+#'
+#' Agrega una columna,llamada \code{valor}, de clase numeric, a una tabla con
+#' datos del SIA,  con los valores originales convertidos a numéricos. Los
+#' requisitos se exponen en la sección "Details".
+#'
+#' @param .data `data.frame` con datos provenientes de la base de datos del SIA
+#'   (infambientalbd), con al menos tres columnas: `valor_minimo_str`,
+#'   `limite_deteccion` y `limite_cuantificacion` (ver detalles).
+#'
+#' @param filtrar_no_num `logical` (bandera). ¿Conservar los valores que no se
+#'   pudieron convertir en numéricos?
+#' @param inheritParams clasif_tipo_dato
+#'
+#' @return `tibble` con datos originales y una columna numérica extra, `valor`,
+#'   cuyos valores son el resultado de sustitución realizadas con expresiones
+#'   regulares. Ver detalles.
+#'
+#' @details Esta función se creó en el contexto de analizar datos numéricos para
+#'   validación, pero puede usarse potencialmente para otras tareas, tales como
+#'   análisis y visualización de datos provenientes del SIA.
+#'
+#'   Requiere que .data incluya columnas con valores y límites (detección y
+#'   cuantificación), con los mismos nombres que usa la tabla
+#'   \code{\link{sia_datos_muestra_parametros}} de la base de datos
+#'   infambientalbd (SIA).:
+#'
+#'   - \code{valor_minimo_str} (character)
+#'
+#'   - \code{limite_deteccion} (character)
+#'
+#'   - \code{limite_cuantificacion} (character)
+#'
+#'   Nota: esto implica que .data tiene formato "largo" (ver
+#'   \code{\link[tidyr]{pivot_longer}}), es decir, que en lugar de una columna
+#'   para cada parámetro, se incluye una (o más) columna con el nombre del
+#'   parámetro correspondiente a cada fila.
+#'
+#'   En la columna `valor` de la salida, se encuentran los valores de los
+#'   parámetros, convertidos en numéricos. Sin importar el método elegido, la
+#'   modificación mínima, además de aplicar \code{\link[base]{as.numeric}}, es
+#'   cambiar comas, comas repetidas y puntos repetidos por un único punto
+#'   (marcador de decimales).
+#'
+#'   Los métodos contemplados implican las siguientes conversiones (X representa
+#'   un valor numérico):
+#'
+#'   \describe{
+#'
+#'   \item{simple}{
+#'
+#'   \itemize{
+#'
+#'   \item <LD = LD
+#'
+#'   \item <LC = LC
+#'
+#'   \item <X = X
+#'
+#'   \item >X = X
+#'
+#'   }
+#'
+#'   }
+#'
+#'   \item{informe}{
+#'
+#'   \itemize{
+#'
+#'   \item <LD = LD
+#'
+#'   \item <LC = LC/2
+#'
+#'   \item LD<X<LC = (LD + LC) / 2
+#'
+#'   \item <X = X
+#'
+#'   \item >X = X
+#'
+#'   }
+#'
+#'   }
+#'
+#'   }
+#'
+#' @examples
+#' d <- datos_sia %>%
+#'   dplyr::select(id_parametro, valor_minimo_str,
+#'                 limite_deteccion, limite_cuantificacion)
+#'
+#' valores_numericos(d)
+#' valores_numericos(d, metodo = "informe")
+#' # Porcentajes de algunos tipos de dato:
+#' valores_numericos(d, metodo = "informe") %>%
+#'   dplyr::group_by(id_parametro) %>%
+#'   dplyr::summarise(
+#'     porcentaje_numerico = sum(id_tipo_dato == 1L) / dplyr::n(),
+#'     porcentaje_menor_lim = sum(id_tipo_dato %in% 2:4) / dplyr::n()
+#'     )
+valores_numericos <- function(.data,
+                              filtrar_no_num = FALSE,
+                              metodo = "simple") {
+
+  sinc <- grepl("sin_cambios|basico", metodo, ignore.case = TRUE)
+  sust <- grepl("simple|informe", metodo, ignore.case = TRUE)
+  info <- grepl("informe", metodo, ignore.case = TRUE)
+
+  out <- .data
+  clasif <- clasif_tipo_dato(out$valor_minimo_str, metodo = metodo)
+  out$valor <- clasif$valores
+
+  # Casos de >X o <X:
+  if (sust) {
+    i <- clasif$tipos %in% 5:6
+    if (any(i)) {
+      out$valor[i] <- stringr::str_replace_all(out$valor[i],
+                                               "^[^[:digit:]]+([[:digit:]]+)",
+                                               "\\1")
+    }
+  }
+
+  vnum <- as.numeric(out$valor)
+
+  # Casos de <LD:
+  if (sust) {
+    ### Otras expresiones regulares probadas:
+    # "^\\s*[<>]+\\s*L[,.]*(D|[,.]*O[,.]*D)[,.]*\\s*$"
+    # "^\\s*N[,./]*D[,.]*\\s*$"
+    ld <- clasif$tipos == 2L
+
+    if (any(ld)) {
+      vnum[ld] <-
+        out$limite_deteccion[ld] %>%
+        stringr::str_trim() %>%
+        stringr::str_replace_all("[.,]+", ".") %>%
+        as.numeric()
+    }
+  }
+
+  # Casos de <LC:
+  if (sust) {
+    ### Otras expresiones regulares probadas:
+    # "^\\s*[<>]+\\s*L[,.]*(C|O[,.]*Q)[,.]*\\s*$"
+    # "^\\s*L[,.]*[DC][,.]*\\s*[<>]*\\s*X\\s*[<>]*\\s*L[,.]*[CD][,.]*\\s*$"
+
+    lc <- clasif$tipos == 3L
+
+    if (any(lc)) {
+      lcnum <-
+        out$limite_cuantificacion[lc] %>%
+        stringr::str_trim() %>%
+        stringr::str_replace_all("[.,]+", ".") %>%
+        as.numeric()
+
+      vnum[lc] <- if (info) lcnum / 2 else lcnum
+    }
+  }
+
+  # Casos de LD<X<LC:
+  if (info) {
+    ldxlc <- clasif$tipos == 4L
+
+    if (any(ldxlc)) {
+      lcnum <-
+        out$limite_cuantificacion[ldxlc] %>%
+        stringr::str_trim() %>%
+        stringr::str_replace_all("[.,]+", ".") %>%
+        as.numeric()
+
+      ldnum <-
+        out$limite_deteccion[ldxlc] %>%
+        stringr::str_trim() %>%
+        stringr::str_replace_all("[.,]+", ".") %>%
+        as.numeric()
+
+      vnum[ldxlc] <- (ldnum + lcnum) / 2
+    }
+  }
+
+  if (sinc) {
+    warning('La opción "filtrar_no_num" es ignorada debido a que fue ',
+            'seleccionada la opción "sin_cambios"')
+    filtrar_no_num <- FALSE
+    out$valor <- out$valor_minimo_str
+  } else out$valor <- vnum
+
+  out$id_tipo_dato <- clasif$tipos
+
+  out <- dplyr::left_join(out, tipos_de_dato, by = "id_tipo_dato")
+
+  if (filtrar_no_num) out <- dplyr::filter(out, !is.na(valor))
 
   return(out)
 }

@@ -5,7 +5,7 @@
 \alias{sia_unidad}
 \title{Lista de las unidades de medidas contempladas por el SIA}
 \format{
-Tabla con 1321 filas y 4 columnas:
+Tabla con 115 filas y 3 columnas:
 
 \describe{
 

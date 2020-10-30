@@ -5,7 +5,8 @@
 \alias{codigos_param}
 \title{Tabla con códigos alternativos para parámetros}
 \format{
-Tabla con 255 filas y 7 columnas:
+Tabla con 255 filas y 7
+columnas:
 
 \describe{
 

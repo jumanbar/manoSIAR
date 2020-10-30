@@ -96,21 +96,18 @@ transformados de a partir de \code{valor_minimo_str} y de forma acorde a lo
 especificado en "Método".}
 
 \item{id_tipo_dato}{Es un número asignado a cada valor. Se trata de una
-clasificación de cada dato según siete categorías:
+clasificación de cada dato según siete categorías (ver también
+\code{\link{tipos_de_dato}}):
 
-\enumerate{\preformatted{1. `Numérico`
-
-2. `<LD`
-
-3. `<LC`
-
-4. `LD<X<LC`
-
-5. `<X`
-
-6. `>X`
-
-7. `Otros`
+\enumerate{
+\enumerate{
+\item \code{Numérico}
+\item \verb{<LD}
+\item \verb{<LC}
+\item \verb{LD<X<LC}
+\item \verb{<X}
+\item \verb{>X}
+\item \code{Otros}
 }
 
 }
@@ -133,10 +130,17 @@ parámetros tienen un código nuevo propuesto.}
 
 }
 }
+\source{
+\code{infambientalbd}
+}
 \usage{
 datos_sia
 }
 \description{
 Última modificación: 2020-10-15
+}
+\seealso{
+\code{\link{tipos_de_dato}}, \code{\link{consulta_muestras}},
+\code{\link{codigos_params}}
 }
 \keyword{datasets}

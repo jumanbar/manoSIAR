@@ -5,7 +5,8 @@
 \alias{sia_parametro}
 \title{Lista de parámetros de SIA}
 \format{
-Tabla de 356 filas y 7 columnas:
+Tabla con 356 filas y 7
+columnas:
 
 \describe{
 
