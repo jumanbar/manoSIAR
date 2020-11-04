@@ -13,7 +13,9 @@ g_par_esp(
 )
 }
 \arguments{
-\item{.data}{Daos tomados}
+\item{.data}{data.frame. Datos del SIA}
+
+\item{id_parametro}{integer.}
 
 \item{colores_meses}{}
 }

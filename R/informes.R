@@ -201,31 +201,57 @@ eti <- function(id_parametro, t_eti) {
            ") en la tabla t_eti")
 }
 
-#' Graficar un parámetro por mes
+#' Graficos de parámetros por mes
 #'
-#' Hace una gráfica del parámetro por mes
+#' `g_mes` grafica los valores de un parámetro por mes. `g_mes_all` en escencia
+#' llama a \code{\link{g_mes}} tantas veces como id de parámetros en
+#' `id_parametro`, realizando una figura única que combina los gráficos de los
+#' parámetros individuales.
+
+#' @param .data data.frame. Datos del SIA
+#' @param id_parametro integer. Id de uno/escalar (`g_mes`) o varios elementos
+#'   (`g_mes_all`). Se debe(n) corresponder con los ids encontrados columna
+#'   homónima de \code{\link{sia_parametro}}
+#' @param pos_leyenda character. Valor enviado directamente al argumento
+#'   `legend.position` de la función \code{\link[ggplot2]{theme}}
+#' @param nombre_clave_param character. Opcional. Nombre clave del parámetro
+#'   (ej.: "PT"). Se corresponde con la columna `nombre_clave` de
+#'   \code{\link{sia_parametro}}
+#' @param t_eti `tbl_df`. Opcional. Tabla de etiquetas
+#' @param ylab Opcional. Etiqueta para el eje y del gráfico resultante. Si este
+#'   argumento no es especificado, se utilizará la función \code{eti} para crear
+#'   la etiqueta.
+#' @param ... Argumentos adicionales para pasar a
+#'   \code{\link[patchwork]{wrap_plots}}
 #'
-#' @param .data Tabla con datos
-#' @param nombre_clave_param Nombre clave del parámetro, tal como aparece en la
-#'   tabla parametro de infambientalbd
-#' @param id_param Escalar (integer). Anula nombre_clave_param.
-#' @param ylab Etiqueta para el eje y del gráfico resultante. Si este argumento
-#'   no es especificado, se utilizará la función \code{eti} para crear la
-#'   etiqueta.
-#'
-#' @details Requiere de la tabla decreto para agregar las líneas
-#'   horizontales correspondientes a los valores límites aceptados para la clase
-#'   1 de aguas (decreto 253/79).
+#' @details Requiere de la tabla decreto para agregar las líneas horizontales
+#'   correspondientes a los valores límites aceptados para la clase 1 de aguas
+#'   (decreto 253/79).
 #' @return Objeto de clase `gg` (hereda de \code{\link[ggplot2]{ggplot}}).
+#'
+#' @import ggplot2
+#' @return
 #' @export
 #'
-#' @seealso \code{\link{g_mes_all}}, \code{\link{t_eti_base}}
+#' @seealso \code{\link{t_eti_base}}
 #'
 #' @examples
-#' dfo <- data.frame(mes = 3:6, codigo_pto = 100200:100203,
-#'                   id_parametro = 2009, valor = c(140, 120, 198, 166))
+#' p <- c(PT=2098, NT=2102, ST=2028, Conduc=2009)
+#' dfo <- data.frame(mes = rep(3:6, 4),
+#'                   codigo_pto = rep(c("RN1", "RN2", "RN3", "RN5"), each = 4),
+#'                   id_parametro = rep(p, each = 4*4),
+#'                   valor = c(rnorm(4*4, mean = 30, sd = 5),
+#'                             rnorm(4*4, mean = 55, sd = 15),
+#'                             rnorm(4*4, mean = 315, sd = 50),
+#'                             rnorm(4*4, mean = 500, sd = 80)))
+#' dfo$valor[sample(4*4*4, 5)] <- NA
+#' dplyr::filter(dfo, is.na(valor))
 #' g_mes(dfo, id_parametro = 2009, ylab = 'Cond (μS/cm)')
 #' g_mes(dfo, nombre_clave_param = 'Conduc', ylab = 'Cond (μS/cm)')
+#' g_mes_all(dfo, id_parametro = p)
+#' g_mes_all(dfo, id_parametro = 2098L)
+#' g_mes_all(dfo, id_parametro = 2008L) # Vacío
+#' g_mes_all(dfo, id_parametro = c(p, 2008L)) # Vacío
 g_mes <- function(.data, id_parametro = NULL, pos_leyenda = 'none',
                   nombre_clave_param, ylab = NULL, t_eti) {
 
@@ -288,38 +314,8 @@ g_mes <- function(.data, id_parametro = NULL, pos_leyenda = 'none',
   return(out)
 }
 
-#' Juntar varias gráficas por mes
-#'
-#' En escencia llama a \code{\link{g_mes}} tantas veces como id de parámetros en
-#' el vector `id_parametro`, realizando una figura única que combina los
-#' gráficos de los parámetros individuales.
-#'
-#' @param .data Datos
-#' @param id_parametro `integer`. id de varios parámetros
-#' @param t_eti `tbl_df`. Tabla de etiquetas
-#' @param ... Argumentos derivados a \code
-#'
-#' @import ggplot2
-#' @return
-#' @export
-#'
-#' @seealso \code{\link{g_mes}}, \code{\link{t_eti_base}}
-#'
-#' @examples
-#' p <- c(PT=2098, NT=2102, ST=2028, Conduc=2009)
-#' dfo <- data.frame(mes = rep(3:6, 4),
-#'                   codigo_pto = rep(c("RN1", "RN2", "RN3", "RN5"), each = 4),
-#'                   id_parametro = rep(p, each = 4*4),
-#'                   valor = c(rnorm(4*4, mean = 30, sd = 5),
-#'                             rnorm(4*4, mean = 55, sd = 15),
-#'                             rnorm(4*4, mean = 315, sd = 50),
-#'                             rnorm(4*4, mean = 500, sd = 80)))
-#' dfo$valor[sample(4*4*4, 5)] <- NA
-#' dplyr::filter(dfo, is.na(valor))
-#' g_mes_all(dfo, id_parametro = p)
-#' g_mes_all(dfo, id_parametro = 2098L)
-#' g_mes_all(dfo, id_parametro = 2008L) # Vacío
-#' g_mes_all(dfo, id_parametro = c(p, 2008L)) # Vacío
+#' @describeIn g_mes Varios gráficos de valores de parámetros por mes en una
+#'   misma figura
 g_mes_all <- function(.data, id_parametro, t_eti, ...) {
 
   if (missing(t_eti)) {
@@ -330,7 +326,7 @@ g_mes_all <- function(.data, id_parametro, t_eti, ...) {
   lista <- vector(mode = "list", length = length(id_parametro))
   # for (i in 1:(length(id_parametro) - 1))
   for (i in 1:(length(id_parametro)))
-    lista[[i]] <- g_mes(.data, id_param = id_parametro[i], t_eti = t_eti)
+    lista[[i]] <- g_mes(.data, id_parametro = id_parametro[i], t_eti = t_eti)
 
   lista[[i]] <-
     lista[[i]] +
@@ -350,16 +346,16 @@ g_mes_all <- function(.data, id_parametro, t_eti, ...) {
 }
 
 g_comp_est <- function(.data, nombre_clave_param,
-                       id_param = NULL, ylab = NULL, t_eti) {
+                       id_parametro = NULL, ylab = NULL, t_eti) {
 
   if (missing(t_eti)) {
     t_eti <- t_eti_base
     warning("Se usa t_eti_base como sustituta del argumento t_eti")
   }
 
-  id <- if (is.null(id_param))
+  id <- if (is.null(id_parametro))
     dplyr::filter(sia_parametro, nombre_clave == nombre_clave_param)$id_parametro else
-      id_param
+      id_parametro
 
   if (is.null(ylab))
     ylab <- eti(id, t_eti)
@@ -399,7 +395,7 @@ g_comp_est_all <- function(.data, id_parametro, ...) {
   lista <- vector(mode = "list", length = length(id_parametro))
   # for (i in 1:(length(id_parametro) - 1))
   for (i in 1:(length(id_parametro)))
-    lista[[i]] <- g_comp_est(.data, id_param = id_parametro[i])
+    lista[[i]] <- g_comp_est(.data, id_parametro = id_parametro[i])
 
   # lista[[i]] <-
   #   lista[[i]] +
@@ -417,11 +413,38 @@ g_comp_est_all <- function(.data, id_parametro, ...) {
   print(out)
 }
 
-g_comp_cue <- function(.data, nombre_clave_param,
-                          id_param = NULL, ylab = NULL) {
-  id <- if (is.null(id_param))
-    dplyr::filter(sia_parametro, nombre_clave == nombre_clave_param)$id_parametro else
-      id_param
+
+
+#' Gráfico de comparación entre cuencas
+#'
+#' @param .data data.frame. Datos del SIA
+#' @param nombre_clave_param character. Nombre clave del parámetro (ej.: "PT").
+#'   Se corresponde con la columna `nombre_clave` de \code{\link{sia_parametro}}
+#' @param id_parametro integer. Id del parámetro. Se corresponde con la columna
+#'   homónima de \code{\link{sia_parametro}}
+#' @param ylab character. Etiqueta opcional para usar en la gráfica
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' d <- filtrar_datos(datos_sia, id_programa = 10L,
+#'                    rango_fechas = c(2017, 2019),
+#'                    id_parametro = 2098)
+#' g_comp_cue(d, "PT")
+#'
+#' e <- filtrar_datos(datos_sia, id_programa = 4L,
+#'                    rango_fechas = c(2017, 2019),
+#'                    id_parametro = 2098)
+#' g_comp_cue(e, "PT")
+g_comp_cue <- function(.data,
+                       nombre_clave_param,
+                       id_parametro = NULL,
+                       ylab = NULL) {
+  id <- if (is.null(id_parametro))
+    dplyr::filter(sia_parametro,
+                  nombre_clave == nombre_clave_param)$id_parametro else
+      id_parametro
 
   if (is.null(ylab))
     ylab <- eti(id)
@@ -430,7 +453,6 @@ g_comp_cue <- function(.data, nombre_clave_param,
     .data %>%
     dplyr::filter(id_parametro == id) %>%
     ggplot() +
-    aes(nombre_subcuenca_informes, valor) +
     geom_boxplot(fill = "lightblue", outlier.size = 1.2,
                  outlier.fill = "#000000") +
     labs(x = NULL, y = ylab) +
@@ -438,6 +460,12 @@ g_comp_cue <- function(.data, nombre_clave_param,
     theme(panel.grid.minor = element_blank(),
           text = element_text(size=10),
           axis.text.x = element_text(angle=90, vjust=1))
+
+  out <- if (all(is.na(.data$nombre_subcuenca_informes))) {
+    out + aes(sub_cue_nombre, valor)
+    warning("Usando sub_cue_nombre en lugar de nombre_subcuenca_informes ",
+            "debido a que no se encontraron valores válidos para la última")
+  } else out + aes(nombre_subcuenca_informes, valor)
 
   return(out)
 }
@@ -484,8 +512,8 @@ g_iet <- function(.data) {
 
 #' Graficar valores anuales por estacion
 #'
-#' @param .data Daos tomados
-#' @param id_parametro
+#' @param .data data.frame. Datos del SIA
+#' @param id_parametro integer.
 #' @param anio
 #' @param colores_meses
 #'

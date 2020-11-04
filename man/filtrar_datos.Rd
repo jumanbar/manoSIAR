@@ -11,7 +11,8 @@ filtrar_datos(
   rango_fechas = NULL,
   id_parametro = NULL,
   id_estacion = NULL,
-  orden_est = NULL
+  orden_est = NULL,
+  tipo_punto_id = NULL
 )
 }
 \arguments{
@@ -33,6 +34,9 @@ parámetros.}
 
 \item{orden_est}{character. Vector con los nombres de las estaciones en el
 orden deseado para las gráficas u otros usos.}
+
+\item{tipo_punto_id}{integer. Vector que define los tipos de punto usados: 1
+= \code{SUPERFICIE}, 2 = \code{FONDO}, 1:2 = Ambos tipos.}
 }
 \value{
 

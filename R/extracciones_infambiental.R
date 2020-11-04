@@ -653,6 +653,8 @@ consulta_muestras <- function(con, id_matriz = 6L,
 #'   (sitios) de monitoreo.
 #' @param orden_est character. Vector con los nombres de las estaciones en el
 #'   orden deseado para las gráficas u otros usos.
+#' @param tipo_punto_id integer. Vector que define los tipos de punto usados: 1
+#'   = `SUPERFICIE`, 2 = `FONDO`, 1:2 = Ambos tipos.
 #'
 #' @return
 #'
@@ -667,7 +669,8 @@ filtrar_datos <- function(.data,
                           rango_fechas = NULL,
                           id_parametro = NULL,
                           id_estacion = NULL,
-                          orden_est = NULL) {
+                          orden_est = NULL,
+                          tipo_punto_id = NULL) {
 
   if (missing(id_programa))
     stop("id_programa espera un único número entero positivo.")
@@ -694,6 +697,7 @@ filtrar_datos <- function(.data,
     rango_fechas <- c("1900-01-01", as.character(Sys.Date() + 1))
   } else if (length(rango_fechas) == 1L) {
 
+    rf_orig <- rango_fechas
     if (grepl("^[12][0-9]{3}$", rango_fechas)) {
       rango_fechas <- paste0(rep.int(rango_fechas, 2), c("-01-01", "-12-31"))
     } else {
@@ -702,9 +706,8 @@ filtrar_datos <- function(.data,
                         gsub("^[12][0-9]{3}", anio + 1L, rango_fechas))
     }
 
-
-
-    warning("rango_fechas tiene un solo valor: se filtran fechas en el",
+    warning("rango_fechas ingresado (", rf_orig,
+            ") tiene un solo valor: se filtran fechas en el",
             " rango de ", rango_fechas[1], " a ", rango_fechas[2])
 
   } else if (length(rango_fechas) != 2L) {
@@ -719,7 +722,7 @@ filtrar_datos <- function(.data,
 
   if (is.null(id_parametro)) {
     id_parametro <- sia_parametro$id_parametro
-    warning("id_parametro no especificado, se seleccionan",
+    warning("id_parametro no especificado, se seleccionan ",
             "todos los parámetros por defecto")
   }
 
@@ -734,12 +737,19 @@ filtrar_datos <- function(.data,
     est_e <- dplyr::filter(sia_estacion, prog_monitoreo == id_programa)$id
     w <- id_estacion %in% est_e
     if (!all(w)) {
+      id_estacion <- id_estacion[w]
       warning("Se descartaron las estaciones con id ",
               colapsar_secuencia(id_estacion[!w]),
               ", por no pertenecer al programa de monitoreo (id_programa = ",
               id_programa, ")")
-      id_estacion <- id_estacion[w]
     }
+  }
+
+  if (is.null(tipo_punto_id)) {
+    tipo_punto_id <- 1:2
+    warning("tipo_punto_id no especificado. Los datos incluyen estaciones de",
+            " tipo SUPERFICIE y FONDO mezcladas (tipo_punto_id = 1 y 2 ",
+            "respectivamente)")
   }
 
   out <- dplyr::filter(.data,
@@ -748,12 +758,13 @@ filtrar_datos <- function(.data,
                        fecha_muestra >= rango_fechas[[1]],
                        fecha_muestra <= rango_fechas[[2]],
                        id_parametro %in% !!id_parametro,
-                       id_estacion %in% !!id_estacion)
+                       id_estacion %in% !!id_estacion,
+                       tipo_punto_id %in% !!tipo_punto_id)
 
   esperados <-
-    tibble(id = id_estacion) %>%
-    left_join(sia_estacion, by = "id") %>%
-    pull(codigo_pto)
+    tibble::tibble(id = id_estacion) %>%
+    dplyr::left_join(sia_estacion, by = "id") %>%
+    dplyr::pull(codigo_pto)
 
   if (is.null(orden_est)) {
     orden_est <- stringr::str_sort(esperados, numeric = TRUE)
@@ -769,11 +780,6 @@ filtrar_datos <- function(.data,
     }
   }
   out$codigo_pto <- factor(out$codigo_pto, levels = orden_est)
-
-  tp <- unique(out$tipo_punto_id)
-  if (all(tp %in% 1:2))
-    warning("El conjunto de datos tiene estaciones de tipo SUPERFICIE y FONDO ",
-            "mezcladas (tipo_punto_id = 1 y 2 respectivamente)")
 
   return(out)
 }
