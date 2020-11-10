@@ -2,15 +2,29 @@
 % Please edit documentation in R/informes.R
 \name{g_long}
 \alias{g_long}
+\alias{d_long}
+\alias{g_long_files}
 \title{Graficar valores anuales longitudinales}
 \usage{
 g_long(
   .data,
   id_parametro,
   anio,
+  ventana_anios = 5L,
   colores_meses = (scales::hue_pal())(12),
   horiz
 )
+
+d_long(
+  .data,
+  id_parametro,
+  anio,
+  ventana_anios = 5L,
+  abr_meses = c("Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct",
+    "Nov", "Dic")
+)
+
+g_long_files(.data, anio, ventana_anios, tabla_horiz, path)
 }
 \arguments{
 \item{.data}{data.frame. Datos del SIA (ver \code{\link{datos_sia}} y
@@ -22,11 +36,17 @@ encontrados columna homónima de \code{\link{sia_parametro}}}
 
 \item{anio}{intger. Año}
 
+\item{ventana_anios}{integer. Cantidad de años anteriores al anio en
+cuestión. Es un lustro por defecto.}
+
 \item{colores_meses}{character. Paleta de colores para usar en los distintos
 meses.}
 
 \item{horiz}{numeric. Vector con dos valores: min y max, para ser graficados
 con líneas horizontales.}
+
+\item{abr_meses}{character. Abreviaciones a ser usadas para los meses en el
+eje x de las graficas.}
 
 \item{tabla_horiz}{data.frame. Debe tener las columnas \code{id_parametro},
 \code{valor}, y \code{extremo} tal como en la tabla \code{\link{decreto}}}
@@ -38,13 +58,28 @@ generadas por \code{g_long}}
 
 }
 \description{
-Gráfica los valores de los parámetros por estaciones, ordenadas en orden de
-la cuenca
+Grafica los valores de los parámetros por estaciones.
 }
+\details{
+Las estaciones deben estar previamente ordenadas (como factores, no
+necesariamente factores ordenados). Específicamente, el campo de los datos
+que debe ser un factor es el de \code{codigo_pto}. La función
+\code{\link{filtrar_datos}} tiene facilidades para preparar datos de esta
+manera.
+}
+\section{Functions}{
+\itemize{
+\item \code{d_long}: Funcion que prepara los datos para \code{g_long}
+
+\item \code{g_long_files}: Guarda gráficos de \code{g_long} en archivos
+}}
+
 \examples{
-d <- readRDS("tmp/datos_cuareim.rds")
-decreto <- readRDS("../data/decreto.rds")
-d$mes <- as.integer(d$mes)
-d$anio <- as.integer(d$anio)
+d <- filtrar_datos(datos_sia, id_programa = 5, rango_fechas = c(2012, 2019),
+                   id_parametro = c(2032, 2009, 2017, 2018, 2097:2098, 2105),
+                   tipo_punto_id = 1)
+h <- dplyr::filter(decreto, clase == "1", !is.na(valor))
 g_long(d, 2032, 2019L, horiz = c(min = 5, max = 28))
+g_long(d, 2032, 2019L, horiz = c(min = 5, max = 28), ventana_anios = 7)
+g_long_files(d, 2019L, tabla_horiz = h)
 }

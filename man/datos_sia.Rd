@@ -7,7 +7,7 @@
 \alias{datos_sia_sed}
 \title{Datos extraídos del SIA.}
 \format{
-Tabla con 228226 filas y 41 columnas:
+Tabla con 223103 filas y 40 columnas:
 
 \describe{
 
@@ -132,8 +132,9 @@ La tibble \code{datos_sia} tiene datos de matriz Aguas superficiales y
 }
 \details{
 Código de creación de las tablas:\preformatted{
-cp <- codigos_param \%>\% dplyr::filter(!is.na(id_parametro)) \%>\%
-dplyr::select(grupo, codigo_nuevo, id_parametro)
+cp <- codigos_param \%>\% 
+  dplyr::filter(!is.na(id_parametro)) \%>\%
+  dplyr::select(grupo, codigo_nuevo, id_parametro)
 
 con <- con_sia()
 

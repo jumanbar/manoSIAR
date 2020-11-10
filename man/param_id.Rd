@@ -19,6 +19,6 @@ param_id(patron, ...)
 Buscador de id_parametro según un texto (un google de id_parametros)
 }
 \examples{
-param_id("fÃ³sforo")
+param_id("fósforo")
 param_id("pt", max.distance = 0)
 }

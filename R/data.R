@@ -582,8 +582,9 @@
 #'
 #' ```
 #'
-#' cp <- codigos_param %>% dplyr::filter(!is.na(id_parametro)) %>%
-#' dplyr::select(grupo, codigo_nuevo, id_parametro)
+#' cp <- codigos_param %>% 
+#'   dplyr::filter(!is.na(id_parametro)) %>%
+#'   dplyr::select(grupo, codigo_nuevo, id_parametro)
 #'
 #' con <- con_sia()
 #'

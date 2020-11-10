@@ -251,7 +251,7 @@ clasif_tipo_dato <- function(x, metodo = "simple") {
   info <- grepl("informe", metodo, ignore.case = TRUE)
 
   # Cambiar comas, comas repetidas y puntos repetidos por un único punto:
-  y <- limpia_num(x)
+  y <- toascii(limpia_num(x))
   num <- !is.na(as.numeric(y))
 
   ## El siguiente paso es importante, porque los "LD<x<LC" se convierten en

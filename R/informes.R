@@ -568,8 +568,13 @@ g_iet <- function(.data) {
 
 #' Graficar valores anuales longitudinales
 #'
-#' Gráfica los valores de los parámetros por estaciones, ordenadas en orden de
-#' la cuenca
+#' Grafica los valores de los parámetros por estaciones.
+#'
+#' Las estaciones deben estar previamente ordenadas (como factores, no
+#' necesariamente factores ordenados). Específicamente, el campo de los datos
+#' que debe ser un factor es el de `codigo_pto`. La función
+#' \code{\link{filtrar_datos}} tiene facilidades para preparar datos de esta
+#' manera.
 #'
 #' @param .data data.frame. Datos del SIA (ver \code{\link{datos_sia}} y
 #'   ejemplos)
@@ -577,6 +582,10 @@ g_iet <- function(.data) {
 #'   elementos (`g_mes_pto_all`). Se debe(n) corresponder con los ids
 #'   encontrados columna homónima de \code{\link{sia_parametro}}
 #' @param anio intger. Año
+#' @param ventana_anios integer. Cantidad de años anteriores al anio en
+#'   cuestión. Es un lustro por defecto.
+#' @param abr_meses character. Abreviaciones a ser usadas para los meses en el
+#'   eje x de las graficas.
 #' @param colores_meses character. Paleta de colores para usar en los distintos
 #'   meses.
 #' @param horiz numeric. Vector con dos valores: min y max, para ser graficados
@@ -590,98 +599,51 @@ g_iet <- function(.data) {
 #' @export
 #'
 #' @examples
-#' d <- readRDS("tmp/datos_cuareim.rds")
-#' decreto <- readRDS("../data/decreto.rds")
-#' d$mes <- as.integer(d$mes)
-#' d$anio <- as.integer(d$anio)
+#' d <- filtrar_datos(datos_sia, id_programa = 5, rango_fechas = c(2012, 2019),
+#'                    id_parametro = c(2032, 2009, 2017, 2018, 2097:2098, 2105),
+#'                    tipo_punto_id = 1)
+#' h <- dplyr::filter(decreto, clase == "1", !is.na(valor))
 #' g_long(d, 2032, 2019L, horiz = c(min = 5, max = 28))
+#' g_long(d, 2032, 2019L, horiz = c(min = 5, max = 28), ventana_anios = 7)
+#' g_long_files(d, 2019L, tabla_horiz = h)
 g_long <- function(.data,
                    id_parametro,
                    anio,
+                   ventana_anios = 5L,
                    colores_meses = scales::hue_pal()(12),
                    horiz) {
-  require(dplyr)
-  require(magrittr)
-  require(lubridate)
-
   # if (id_parametro == 2032L)
   #   save(.data, id_parametro, anio, colores_meses, file = "tmp/g_long.RData")
 
-  .data <- dplyr::filter(.data, id_parametro == !!id_parametro)
-
-  tmp <- dplyr::filter(.data, anio == !!anio)
-
-  if (!nrow(tmp)) return(NULL)
-
-  # Datos del año seleccionado, con valores promedio por estación y mes
-  # (típicamente hay un único valor por estación y por mes):
-  d_anio <- tmp %>%
-    group_by(id_estacion, codigo_pto, mes) %>%
-    summarise(valor = mean(valor)) %>%
-    mutate(peri = factor(mes, levels = 1:12,
-                         labels = abr_meses, ordered = TRUE)) %>%
-
-             # month(mes, label = TRUE)) %>%
-    ungroup()
-
-  levels(d_anio$peri) <- str_to_title(levels(d_anio$peri))
-
+  abr_meses <- c("Ene", "Feb", "Mar", "Abr", "May", "Jun",
+                 "Jul", "Ago", "Set", "Oct", "Nov", "Dic")
+  
+  datos <- d_long(.data, id_parametro, anio, ventana_anios, abr_meses)
+  
+  if (is.null(datos)) return(NULL)
+  
   # Para que los meses tengan siempre los mismos colores (ver "valores", abajo):
-  meses <- unique(sort(d_anio$mes))
-
+  meses <- unique(sort(datos$mes))
+  meses <- meses[meses > 0]
+  
   # Etiquetas para los meses:
-  eti_meses <- levels(d_anio$peri)[meses]
-
-  # Id de las estaciones que nos interesan (solamente las que tienen datos para
-  # el año seleccionado):
-  id_est <- d_anio %>%
-    dplyr::filter(anio == !!anio) %>%
-    pull(id_estacion) %>%
-    unique %>%
-    sort
-
-  # Datos anuales, promediados:
-  d_anio_prom <- d_anio %>%
-    group_by(id_estacion, codigo_pto) %>%
-    summarise(valor = mean(valor)) %>%
-    mutate(peri = as.character(!!anio),
-           mes = -1) %>%
-    ungroup()
-
-  d_fin <- bind_rows(mutate(d_anio, peri = as.character(peri)),
-                     d_anio_prom)
-
-  # Datos del año anterior:
-  tmp <- .data %>%
-    dplyr::filter(anio == !!anio - 1L, id_estacion %in% id_est)
-
+  eti_meses <- abr_meses[meses]
+  
+  # Periodos:
+  peri <- unique(datos$peri)
+  
   eti_anterior <- NULL
-  if (nrow(tmp)) {
+  if (any(peri == as.character(anio - 1L))) {
     eti_anterior <- as.character(anio - 1L)
-    d_anterior <- tmp %>%
-      group_by(id_estacion, codigo_pto) %>%
-      summarise(valor = mean(valor)) %>%
-      mutate(peri = eti_anterior, mes = -1) %>%
-      ungroup()
-    d_fin <- bind_rows(d_fin, d_anterior)
   }
-
-  # Datos del último lustro:
+  
   eti_lustro <- NULL
-  if (min(.data$anio) < anio - 1L) {
+  w <- grep("^[1:2][0-9]{3}-[1:2][0-9]{3}$", peri)
+  if (length(w)) {
     # Etiqueta para la leyenda:
-    eti_lustro <- paste0(min(.data$anio), "-", anio - 1L)
-    d_lustro <- .data %>%
-      dplyr::filter(anio >= min(.data$anio),
-                    anio <= !!anio - 1L,
-                    id_estacion %in% id_est) %>%
-      group_by(id_estacion, codigo_pto) %>%
-      summarise(valor = mean(valor)) %>%
-      mutate(peri = eti_lustro, mes = -1) %>%
-      ungroup()
-
-    d_fin <- bind_rows(d_fin, d_lustro)
+    eti_lustro <- peri[w]
   }
+  
   cortes <- c(eti_meses, eti_lustro, eti_anterior, as.character(anio))
 
   valores_color <- c(
@@ -717,7 +679,7 @@ g_long <- function(.data,
     19)
 
   g <-
-    d_fin %>%
+    datos %>%
     ggplot() +
     aes(codigo_pto, valor,
         shape = peri,
@@ -770,77 +732,166 @@ g_long <- function(.data,
   return(g)
 }
 
-#' Hacer archivos con gráficos g_long
-#'
+#' @describeIn g_long Funcion que (internamente) prepara los datos para `g_long`
+d_long <- function(.data,
+                   id_parametro,
+                   anio,
+                   ventana_anios = 5L,
+                   abr_meses = c("Ene", "Feb", "Mar", "Abr", "May", "Jun",
+                                 "Jul", "Ago", "Set", "Oct", "Nov", "Dic")) {
+  .data <- dplyr::filter(.data, 
+                         id_parametro == !!id_parametro,
+                         anio >= !!anio - ventana_anios,
+                         anio <= !!anio)
+  
+  tmp <- dplyr::filter(.data, anio == !!anio)
+  
+  if (!nrow(tmp)) return(NULL)
+  
+  # Datos del año seleccionado, con valores promedio por estación y mes
+  # (típicamente hay un único valor por estación y por mes):
+  d_anio <- tmp %>%
+    dplyr::group_by(id_estacion, codigo_pto, mes) %>%
+    dplyr::summarise(valor = mean(valor)) %>%
+    dplyr::mutate(peri = factor(mes, levels = 1:12,
+                                labels = abr_meses, 
+                                ordered = TRUE)) %>%
+    dplyr::ungroup()
+  
+  # Para que los meses tengan siempre los mismos colores (ver "valores", abajo):
+  meses <- unique(sort(d_anio$mes))
+  
+  # Etiquetas para los meses:
+  eti_meses <- levels(d_anio$peri)[meses]
+  
+  # Id de las estaciones que nos interesan (solamente las que tienen datos para
+  # el año seleccionado):
+  id_est <- d_anio %>%
+    dplyr::filter(anio == !!anio) %>%
+    dplyr::pull(id_estacion) %>%
+    unique %>%
+    sort
+  
+  # Datos anuales, promediados:
+  d_anio_prom <- d_anio %>%
+    dplyr::group_by(id_estacion, codigo_pto) %>%
+    dplyr::summarise(valor = mean(valor)) %>%
+    dplyr::mutate(peri = as.character(!!anio),
+                  mes = -1) %>%
+    ungroup()
+  
+  out <- dplyr::bind_rows(dplyr::mutate(d_anio, peri = as.character(peri)),
+                          d_anio_prom)
+  
+  # Datos del año anterior:
+  tmp <- .data %>%
+    dplyr::filter(anio == !!anio - 1L, id_estacion %in% id_est)
+  
+  eti_anterior <- NULL
+  if (nrow(tmp)) {
+    eti_anterior <- as.character(anio - 1L)
+    d_anterior <- tmp %>%
+      dplyr::group_by(id_estacion, codigo_pto) %>%
+      dplyr::summarise(valor = mean(valor)) %>%
+      dplyr::mutate(peri = eti_anterior, mes = -1) %>%
+      dplyr::ungroup()
+    out <- dplyr::bind_rows(out, d_anterior)
+  }
+  
+  # Datos del último lustro:
+  eti_lustro <- NULL
+  if (min(.data$anio) < anio - 1L) {
+    # Etiqueta para la leyenda:
+    eti_lustro <- paste0(min(.data$anio), "-", anio - 1L)
+    d_lustro <- .data %>%
+      dplyr::filter(anio <= !!anio - 1L,
+                    id_estacion %in% id_est) %>%
+      dplyr::group_by(id_estacion, codigo_pto) %>%
+      dplyr::summarise(valor = mean(valor)) %>%
+      dplyr::mutate(peri = eti_lustro, mes = -1) %>%
+      dplyr::ungroup()
+    
+    out <- dplyr::bind_rows(out, d_lustro)
+  }
+  
+  return(out)
+}
 
+#' @describeIn g_long Guarda gráficos de `g_long` en archivos
+g_long_files <- function(.data, anio, ventana_anios, tabla_horiz, path) {
+  
+  directorio <- if (missing(path)) tempdir() else path
+  
+  if (requireNamespace("shiny", quietly = TRUE)) {
+    ses <- shiny::getDefaultReactiveDomain() # session
+    
+    if (!is.null(ses)) {
+      # Para el shiny:
+      out <- shiny::withProgress(
+        message = "Preparando gráficas...", value = 0, min = 0, max = 1, 
+        session = ses, expr = g_long_files_loop(.data, anio, ventana_anios, 
+                                                tabla_horiz, directorio, 
+                                                pbar = TRUE)
+      )
+    } else {
+      out <- g_long_files_loop(.data, anio, ventana_anios, tabla_horiz, 
+                               directorio, pbar = FALSE)
+    }
+  } else {
+    out <- g_long_files_loop(.data, anio, ventana_anios, tabla_horiz, 
+                             directorio, pbar = FALSE)
+  }
+  return(out)
+  
+}
+
+#' Helper para \code{\link{g_long_files}}
 #'
+#' @param directorio character. Ruta al directorio donde se guardarán las imágenes
+#' @param pbar logical. Define si se usa la capacidad de shiny de mostrar una
+#'   barra de progreso
+#' @inheritParams g_long_files
 #' @return
-#' @export
 #'
 #' @examples
-#' d <- readRDS("tmp/datos_cuareim.rds") %>%
-#'   dplyr::filter(id_parametro %in% c(2035, 2017:2018, 2091, 2098, 2111))
-#' h <- dplyr::filter(decreto, clase == "1", !is.na(valor))
-#' g_long_files(d, 2019L, tabla_horiz = h, path = "tmp")
-g_long_files <- function(.data, anio, tabla_horiz, path) {
-
-  # save(.data, id_programa, anio, path, file = "tmp/g_long_files.RData")
-
-  # if (is.null(id_prog)) {
-  #   prog <- adiv_prog(unique(.data$codigo_pto))
-  #   id_prog <- prog$id_programa
-  #   warning("Se estimó que la muestra proviene del programa de monitoreo '",
-  #           prog$nombre_programa, "' en base a los nombres de las estaciones ",
-  #           "presentes en los datos.")
-  # }
-
-  # Para pruebas:
-  # id_par <- c(2032L, 2009, 2098, 2097, 2105)
+g_long_files_loop <- function(.data, anio, ventana_anios, tabla_horiz, 
+                              directorio, pbar = FALSE) {
   id_par <- sort(unique(.data$id_parametro))
-
-  directorio <- if (missing(path)) tempdir() else path
-
-  out <- character(n <- length(id_par))
-
+  n <- length(id_par)
+  
   archivos <-
-    tibble(id_parametro = id_par) %>%
-    left_join(sia_parametro, by = "id_parametro") %>%
-    mutate(out = nombre_clave %>%
-             toascii() %>%
-             str_replace_all("[^[:alnum:]]", "_") %>%
-             str_replace_all("_+", "_") %>%
-             paste0("grafico_", ., "_", anio,".png")) %>%
-    pull(out)
-
+    tibble::tibble(id_parametro = id_par) %>%
+    dplyr::left_join(sia_parametro, by = "id_parametro") %>%
+    dplyr::mutate(out = nombre_clave %>%
+                    toascii() %>%
+                    stringr::str_replace_all("[^[:alnum:]]", "_") %>%
+                    stringr::str_replace_all("_+", "_") %>%
+                    paste0("grafico_", ., "_", anio,".png")) %>%
+    dplyr::pull(out)
   paleta <- scales::hue_pal()(12)
-
-  withProgress(message = "Preparando gráficas...", value = 0, min = 0, max = 1,
-               expr = {
-    for (i in 1:n) {
-
-      horiz <- NULL
-      if (!missing(tabla_horiz)) {
-        v <- dplyr::filter(tabla_horiz, id_parametro == id_par[i])
-        if (nrow(v)) {
-          horiz <- v$valor
-          w <- which(names(v) == "extremo")
-          if (length(w)) {
-            names(horiz) <- v$extremo
-          }
+  for (i in 1:n) {
+    
+    horiz <- NULL
+    if (!missing(tabla_horiz)) {
+      v <- dplyr::filter(tabla_horiz, id_parametro == id_par[i])
+      if (nrow(v)) {
+        horiz <- v$valor
+        w <- which(names(v) == "extremo")
+        if (length(w)) {
+          names(horiz) <- v$extremo
         }
       }
-
-      g <- g_long(.data, id_par[i], anio,
-                     colores_meses = paleta,
-                     horiz = horiz)
-
-      if (!is.null(g))
-        ggsave(archivos[i], g, device = "png", path = directorio, scale = .6)
-
-      # Increment the progress bar, and update the detail text.
-      incProgress(1/n, detail = paste("Nro.", i, "de", n))
     }
-  })
-
+    
+    g <- g_long(.data, id_par[i], anio, ventana_anios,
+                colores_meses = paleta, horiz = horiz)
+    
+    if (!is.null(g))
+      ggsave(archivos[i], g, device = "png", path = directorio, scale = .6)
+    
+    # Increment the progress bar, and update the detail text.
+    if (pbar) 
+      shiny::incProgress(1 / n, detail = paste("Nro.", i, "de", n))
+  }
   return(file.path(directorio, archivos))
 }
