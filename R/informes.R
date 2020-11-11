@@ -566,6 +566,91 @@ g_iet <- function(.data) {
 
 # + Graficos sueltos ----
 
+#' @describeIn g_long Funcion que (internamente) prepara los datos para `g_long`
+d_long <- function(.data,
+                   id_parametro,
+                   anio,
+                   ventana_anios = 5L,
+                   abr_meses = c("Ene", "Feb", "Mar", "Abr", "May", "Jun",
+                                 "Jul", "Ago", "Set", "Oct", "Nov", "Dic")) {
+  .data <- dplyr::filter(.data, 
+                         id_parametro == !!id_parametro,
+                         anio >= !!anio - ventana_anios,
+                         anio <= !!anio)
+  
+  tmp <- dplyr::filter(.data, anio == !!anio)
+  
+  if (!nrow(tmp)) return(NULL)
+  
+  # Datos del año seleccionado, con valores promedio por estación y mes
+  # (típicamente hay un único valor por estación y por mes):
+  d_anio <- tmp %>%
+    dplyr::group_by(id_estacion, codigo_pto, mes) %>%
+    dplyr::summarise(valor = mean(valor)) %>%
+    dplyr::mutate(peri = factor(mes, levels = 1:12,
+                                labels = abr_meses, 
+                                ordered = TRUE)) %>%
+    dplyr::ungroup()
+  
+  # Para que los meses tengan siempre los mismos colores (ver "valores", abajo):
+  meses <- unique(sort(d_anio$mes))
+  
+  # Etiquetas para los meses:
+  eti_meses <- levels(d_anio$peri)[meses]
+  
+  # Id de las estaciones que nos interesan (solamente las que tienen datos para
+  # el año seleccionado):
+  id_est <- d_anio %>%
+    dplyr::filter(anio == !!anio) %>%
+    dplyr::pull(id_estacion) %>%
+    unique %>%
+    sort
+  
+  # Datos anuales, promediados:
+  d_anio_prom <- d_anio %>%
+    dplyr::group_by(id_estacion, codigo_pto) %>%
+    dplyr::summarise(valor = mean(valor)) %>%
+    dplyr::mutate(peri = as.character(!!anio),
+                  mes = -1) %>%
+    ungroup()
+  
+  out <- dplyr::bind_rows(dplyr::mutate(d_anio, peri = as.character(peri)),
+                          d_anio_prom)
+  
+  # Datos del año anterior:
+  tmp <- .data %>%
+    dplyr::filter(anio == !!anio - 1L, id_estacion %in% id_est)
+  
+  eti_anterior <- NULL
+  if (nrow(tmp)) {
+    eti_anterior <- as.character(anio - 1L)
+    d_anterior <- tmp %>%
+      dplyr::group_by(id_estacion, codigo_pto) %>%
+      dplyr::summarise(valor = mean(valor)) %>%
+      dplyr::mutate(peri = eti_anterior, mes = -1) %>%
+      dplyr::ungroup()
+    out <- dplyr::bind_rows(out, d_anterior)
+  }
+  
+  # Datos del último lustro:
+  eti_lustro <- NULL
+  if (min(.data$anio) < anio - 1L) {
+    # Etiqueta para la leyenda:
+    eti_lustro <- paste0(min(.data$anio), "-", anio - 1L)
+    d_lustro <- .data %>%
+      dplyr::filter(anio <= !!anio - 1L,
+                    id_estacion %in% id_est) %>%
+      dplyr::group_by(id_estacion, codigo_pto) %>%
+      dplyr::summarise(valor = mean(valor)) %>%
+      dplyr::mutate(peri = eti_lustro, mes = -1) %>%
+      dplyr::ungroup()
+    
+    out <- dplyr::bind_rows(out, d_lustro)
+  }
+  
+  return(out)
+}
+
 #' Graficar valores anuales longitudinales
 #'
 #' Grafica los valores de los parámetros por estaciones.
@@ -730,91 +815,6 @@ g_long <- function(.data,
     scale_shape_manual(   name = NULL, values = valores_punto, breaks = cortes)
 
   return(g)
-}
-
-#' @describeIn g_long Funcion que (internamente) prepara los datos para `g_long`
-d_long <- function(.data,
-                   id_parametro,
-                   anio,
-                   ventana_anios = 5L,
-                   abr_meses = c("Ene", "Feb", "Mar", "Abr", "May", "Jun",
-                                 "Jul", "Ago", "Set", "Oct", "Nov", "Dic")) {
-  .data <- dplyr::filter(.data, 
-                         id_parametro == !!id_parametro,
-                         anio >= !!anio - ventana_anios,
-                         anio <= !!anio)
-  
-  tmp <- dplyr::filter(.data, anio == !!anio)
-  
-  if (!nrow(tmp)) return(NULL)
-  
-  # Datos del año seleccionado, con valores promedio por estación y mes
-  # (típicamente hay un único valor por estación y por mes):
-  d_anio <- tmp %>%
-    dplyr::group_by(id_estacion, codigo_pto, mes) %>%
-    dplyr::summarise(valor = mean(valor)) %>%
-    dplyr::mutate(peri = factor(mes, levels = 1:12,
-                                labels = abr_meses, 
-                                ordered = TRUE)) %>%
-    dplyr::ungroup()
-  
-  # Para que los meses tengan siempre los mismos colores (ver "valores", abajo):
-  meses <- unique(sort(d_anio$mes))
-  
-  # Etiquetas para los meses:
-  eti_meses <- levels(d_anio$peri)[meses]
-  
-  # Id de las estaciones que nos interesan (solamente las que tienen datos para
-  # el año seleccionado):
-  id_est <- d_anio %>%
-    dplyr::filter(anio == !!anio) %>%
-    dplyr::pull(id_estacion) %>%
-    unique %>%
-    sort
-  
-  # Datos anuales, promediados:
-  d_anio_prom <- d_anio %>%
-    dplyr::group_by(id_estacion, codigo_pto) %>%
-    dplyr::summarise(valor = mean(valor)) %>%
-    dplyr::mutate(peri = as.character(!!anio),
-                  mes = -1) %>%
-    ungroup()
-  
-  out <- dplyr::bind_rows(dplyr::mutate(d_anio, peri = as.character(peri)),
-                          d_anio_prom)
-  
-  # Datos del año anterior:
-  tmp <- .data %>%
-    dplyr::filter(anio == !!anio - 1L, id_estacion %in% id_est)
-  
-  eti_anterior <- NULL
-  if (nrow(tmp)) {
-    eti_anterior <- as.character(anio - 1L)
-    d_anterior <- tmp %>%
-      dplyr::group_by(id_estacion, codigo_pto) %>%
-      dplyr::summarise(valor = mean(valor)) %>%
-      dplyr::mutate(peri = eti_anterior, mes = -1) %>%
-      dplyr::ungroup()
-    out <- dplyr::bind_rows(out, d_anterior)
-  }
-  
-  # Datos del último lustro:
-  eti_lustro <- NULL
-  if (min(.data$anio) < anio - 1L) {
-    # Etiqueta para la leyenda:
-    eti_lustro <- paste0(min(.data$anio), "-", anio - 1L)
-    d_lustro <- .data %>%
-      dplyr::filter(anio <= !!anio - 1L,
-                    id_estacion %in% id_est) %>%
-      dplyr::group_by(id_estacion, codigo_pto) %>%
-      dplyr::summarise(valor = mean(valor)) %>%
-      dplyr::mutate(peri = eti_lustro, mes = -1) %>%
-      dplyr::ungroup()
-    
-    out <- dplyr::bind_rows(out, d_lustro)
-  }
-  
-  return(out)
 }
 
 #' @describeIn g_long Guarda gráficos de `g_long` en archivos

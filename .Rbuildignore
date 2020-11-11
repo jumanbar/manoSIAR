@@ -6,3 +6,5 @@
 ^\.Rprofile$
 ^aux_.*
 ^tmp_.*
+^doc$
+^Meta$

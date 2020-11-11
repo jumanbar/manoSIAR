@@ -464,6 +464,25 @@
 #'
 "cuencas_informes"
 
+# . usuarios -----
+
+#' Tabla con lista de usuarios
+#' 
+#' La lista de usuarios que han cargado datos de muestras a las tablas del SIA.
+#'
+#' @seealso \code{\link{sia_datos_muestra_parametros}}
+#'
+#' @format Tabla con `r nrow(usuario)` filas y
+#' `r ncol(usuario)` columnas:
+#'
+#'   \describe{
+#'
+#'   \item{usuario}{character. Nombre de usuario}
+#'
+#'   }
+#'
+"usuarios"
+
 # . programa_matriz ----
 
 #' Matrices de programas

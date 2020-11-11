@@ -19,3 +19,6 @@ respaldo*
 *.emf
 *.mp4
 
+inst/doc
+doc
+Meta

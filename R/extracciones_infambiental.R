@@ -20,8 +20,6 @@
 #'   \code{datos_extraccion}, del server.R): codigo_nuevo, parametro, grupo,
 #'   id_tipo_dato y tipo_dato.
 #'
-#'
-#'
 #' @return
 #' @export
 #'
@@ -295,9 +293,10 @@ clasif_tipo_dato <- function(x, metodo = "simple") {
 
 #' Consultar muestras de parámetros de infambiental
 #'
-#' Trae datos de infambiental a través de una PostgreSQLConnection. Normalmente
-#' en vez de usar esta función, se usa el set \code{\link{datos_sia}}, que ya
-#' tiene datos extraidos y preparados para ensayar ejemplos.
+#' Trae datos de infambiental a través de una PostgreSQLConnection. Es el método
+#' utilizado por las aplicaciones shiny. Normalmente en vez de usar esta
+#' función, se usa el set \code{\link{datos_sia}}, que ya tiene datos extraidos
+#' y preparados para ensayar ejemplos.
 #'
 #' @param con `PostgreSQLConnection`: objeto utilizado para conectarse con la
 #'   base de datos. Ver details.
@@ -432,12 +431,11 @@ clasif_tipo_dato <- function(x, metodo = "simple") {
 #' con <- DBI::dbConnect(drv, dbname = "infambientalbd",
 #'                       host = "172.20.0.34", port = 5432,
 #'                       user = "shiny_usr", password = "shiny_passwd")
-#' # Para trabajar en la máquina windows de la oficina, en donde ya sé que la
+#' # Para trabajar en máquina windows, en donde ya sé que la
 #' # codificación de caracteres es WIN1252 (en verdad Sys.getlocale() dice
-#' # "Spanish_Uruguay.1252", pero asumo que es lo mismo y en las pruebas que hice
-#' # anduvo bien):
+#' # "Spanish_Uruguay.1252", pero asumo que es lo mismo y en las pruebas que 
+#' # hice anduvo bien):
 #' if (grepl("DINAMA-OAN11", Sys.info()["nodename"], ignore.case = TRUE)) {
-#'   # DBI::dbExecute(con, "SET CLIENT_ENCODING TO 'WIN1252';")
 #'   DBI::dbExecute(con, "SET NAMES 'WIN1252';")
 #' }
 #'
@@ -646,6 +644,13 @@ consulta_muestras <- function(con, id_matriz = 6L,
 #' conjunto de columnas adecuado) de manera similar a la forma en que se extraen
 #' los datos en la aplicación shiny iSIA.
 #'
+#' El uso del argumento `orden_est` equivale, salvo algunas excepciones (que son
+#' anunciadas con warnings), a ejecutar:
+#'
+#' `.data$codigo_pto <- factor(.data$codigo_pto, levels = orden_est)`
+#'
+#' Nota: `codigo_pto` es la columna con los nombres de las estaciones.
+#'
 #' @param .data Tabla con datos extraidos del SIA (\code{\link{datos_sia}} en
 #'   principio)
 #' @param id_programa integer. Un sólo valor que identifica al programa.
@@ -789,6 +794,37 @@ filtrar_datos <- function(.data,
   return(out)
 }
 
+#' Buscador de parámetros
+#'
+#' Buscador de `id_parametro`` según un texto (un google de id_parametros).
+#'
+#' @param patron character. Patrón (expresión regular tipo
+#'   \code{\link[base]{regex}}).
+#' @param ... Argumentos pasados a \code{\link[base]{agrepl}} para buscar en las
+#'   columnas `parametro` y `nombre_clave` de \code{\link{sia_parametro}}
+#'
+#' @seealso \code{\link{sia_parametro}}
+#'
+#' @export
+#' @return
+#'
+#' @examples
+#' param_id("fósforo")
+#' param_id("pt", max.distance = 0)
+param_id <- function(patron, ...) {
+  
+  patron <- toascii(patron)
+  
+  resA <- agrepl(patron, toascii(sia_parametro$nombre_clave),
+                 ignore.case = TRUE,
+                 ...)
+  
+  resB <- agrepl(patron, toascii(sia_parametro$parametro),
+                 ignore.case = TRUE,
+                 ...)
+  
+  sia_parametro[resA | resB,]
+}
 
 #' Convertir valores del SIA en numéricos
 #'
