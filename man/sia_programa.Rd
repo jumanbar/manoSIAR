@@ -5,7 +5,7 @@
 \alias{sia_programa}
 \title{Lista de programas de monitoreo}
 \format{
-Tabla con 32 filas y 6
+Tabla con 31 filas y 6
 columnas:
 
 \describe{

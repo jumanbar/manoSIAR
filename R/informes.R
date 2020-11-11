@@ -18,8 +18,8 @@
 #' (\mu g/L)})}{ln(2)})-20}{% IET = 10 (6 - (.42 - .36 log(PT \mu g/L)) /
 #' log(2)) - 20}
 #'
-#' @param x numeric: valores de concentración de fósforo total, en microgramos
-#'   por litro.
+#' @param x numeric: valores de concentración de fósforo total (id_parametro =
+#'   2090), en microgramos por litro (`µg P/L`; id_unidad = 1054).
 #'
 #' @return Un vector numérico con los valores del IET.
 #'
@@ -31,6 +31,24 @@
 #' iet(rlnorm(10, meanlog = 3, 1))
 iet <- function(x) {
   10 * (6 - (0.42 - 0.36 * log(x)) / log(2)) - 20
+}
+
+#' Cálculo de Amoníaco Libre (NH3L)
+#'
+#' Se calcula NH3 a partir de NH4 según [Canadian Water Quality Guidelines for the Protection of Aquatic Life](ceqg-rcqe.ccme.ca/en/index.html) ([ver Ammonia](http://ceqg-rcqe.ccme.ca/download/en/141))
+#'
+#' @param NH4 numeric. Nitrógeno amoniacal (id_parametro = 2090) en unidades de
+#'   `mg NH4-N/L` (id_unidad = 32).
+#' @param pH numeric. Potencial de Hidrógeno (id_parametro = 2018).
+#' @param Temp numeric. Nitrógeno amoniacal (id_parametro = 2032) en unidades de
+#'   `ºC` (id_unidad = 18).
+#'
+#' @return
+#' @export
+#'
+#' @examples
+amoniaco_libre <- function(NH4, pH, Temp) {
+  1000 * NH4 / (1 + 10 ^ (-pH + (0.0901821 + 2729.92 / (Temp + 273.15))))
 }
 
 #' Media geométrica
@@ -573,31 +591,31 @@ d_long <- function(.data,
                    ventana_anios = 5L,
                    abr_meses = c("Ene", "Feb", "Mar", "Abr", "May", "Jun",
                                  "Jul", "Ago", "Set", "Oct", "Nov", "Dic")) {
-  .data <- dplyr::filter(.data, 
+  .data <- dplyr::filter(.data,
                          id_parametro == !!id_parametro,
                          anio >= !!anio - ventana_anios,
                          anio <= !!anio)
-  
+
   tmp <- dplyr::filter(.data, anio == !!anio)
-  
+
   if (!nrow(tmp)) return(NULL)
-  
+
   # Datos del año seleccionado, con valores promedio por estación y mes
   # (típicamente hay un único valor por estación y por mes):
   d_anio <- tmp %>%
     dplyr::group_by(id_estacion, codigo_pto, mes) %>%
     dplyr::summarise(valor = mean(valor)) %>%
     dplyr::mutate(peri = factor(mes, levels = 1:12,
-                                labels = abr_meses, 
+                                labels = abr_meses,
                                 ordered = TRUE)) %>%
     dplyr::ungroup()
-  
+
   # Para que los meses tengan siempre los mismos colores (ver "valores", abajo):
   meses <- unique(sort(d_anio$mes))
-  
+
   # Etiquetas para los meses:
   eti_meses <- levels(d_anio$peri)[meses]
-  
+
   # Id de las estaciones que nos interesan (solamente las que tienen datos para
   # el año seleccionado):
   id_est <- d_anio %>%
@@ -605,7 +623,7 @@ d_long <- function(.data,
     dplyr::pull(id_estacion) %>%
     unique %>%
     sort
-  
+
   # Datos anuales, promediados:
   d_anio_prom <- d_anio %>%
     dplyr::group_by(id_estacion, codigo_pto) %>%
@@ -613,14 +631,14 @@ d_long <- function(.data,
     dplyr::mutate(peri = as.character(!!anio),
                   mes = -1) %>%
     ungroup()
-  
+
   out <- dplyr::bind_rows(dplyr::mutate(d_anio, peri = as.character(peri)),
                           d_anio_prom)
-  
+
   # Datos del año anterior:
   tmp <- .data %>%
     dplyr::filter(anio == !!anio - 1L, id_estacion %in% id_est)
-  
+
   eti_anterior <- NULL
   if (nrow(tmp)) {
     eti_anterior <- as.character(anio - 1L)
@@ -631,7 +649,7 @@ d_long <- function(.data,
       dplyr::ungroup()
     out <- dplyr::bind_rows(out, d_anterior)
   }
-  
+
   # Datos del último lustro:
   eti_lustro <- NULL
   if (min(.data$anio) < anio - 1L) {
@@ -644,10 +662,10 @@ d_long <- function(.data,
       dplyr::summarise(valor = mean(valor)) %>%
       dplyr::mutate(peri = eti_lustro, mes = -1) %>%
       dplyr::ungroup()
-    
+
     out <- dplyr::bind_rows(out, d_lustro)
   }
-  
+
   return(out)
 }
 
@@ -702,33 +720,33 @@ g_long <- function(.data,
 
   abr_meses <- c("Ene", "Feb", "Mar", "Abr", "May", "Jun",
                  "Jul", "Ago", "Set", "Oct", "Nov", "Dic")
-  
+
   datos <- d_long(.data, id_parametro, anio, ventana_anios, abr_meses)
-  
+
   if (is.null(datos)) return(NULL)
-  
+
   # Para que los meses tengan siempre los mismos colores (ver "valores", abajo):
   meses <- unique(sort(datos$mes))
   meses <- meses[meses > 0]
-  
+
   # Etiquetas para los meses:
   eti_meses <- abr_meses[meses]
-  
+
   # Periodos:
   peri <- unique(datos$peri)
-  
+
   eti_anterior <- NULL
   if (any(peri == as.character(anio - 1L))) {
     eti_anterior <- as.character(anio - 1L)
   }
-  
+
   eti_lustro <- NULL
   w <- grep("^[1:2][0-9]{3}-[1:2][0-9]{3}$", peri)
   if (length(w)) {
     # Etiqueta para la leyenda:
     eti_lustro <- peri[w]
   }
-  
+
   cortes <- c(eti_meses, eti_lustro, eti_anterior, as.character(anio))
 
   valores_color <- c(
@@ -819,30 +837,30 @@ g_long <- function(.data,
 
 #' @describeIn g_long Guarda gráficos de `g_long` en archivos
 g_long_files <- function(.data, anio, ventana_anios, tabla_horiz, path) {
-  
+
   directorio <- if (missing(path)) tempdir() else path
-  
+
   if (requireNamespace("shiny", quietly = TRUE)) {
     ses <- shiny::getDefaultReactiveDomain() # session
-    
+
     if (!is.null(ses)) {
       # Para el shiny:
       out <- shiny::withProgress(
-        message = "Preparando gráficas...", value = 0, min = 0, max = 1, 
-        session = ses, expr = g_long_files_loop(.data, anio, ventana_anios, 
-                                                tabla_horiz, directorio, 
+        message = "Preparando gráficas...", value = 0, min = 0, max = 1,
+        session = ses, expr = g_long_files_loop(.data, anio, ventana_anios,
+                                                tabla_horiz, directorio,
                                                 pbar = TRUE)
       )
     } else {
-      out <- g_long_files_loop(.data, anio, ventana_anios, tabla_horiz, 
+      out <- g_long_files_loop(.data, anio, ventana_anios, tabla_horiz,
                                directorio, pbar = FALSE)
     }
   } else {
-    out <- g_long_files_loop(.data, anio, ventana_anios, tabla_horiz, 
+    out <- g_long_files_loop(.data, anio, ventana_anios, tabla_horiz,
                              directorio, pbar = FALSE)
   }
   return(out)
-  
+
 }
 
 #' Helper para \code{\link{g_long_files}}
@@ -854,11 +872,11 @@ g_long_files <- function(.data, anio, ventana_anios, tabla_horiz, path) {
 #' @return
 #'
 #' @examples
-g_long_files_loop <- function(.data, anio, ventana_anios, tabla_horiz, 
+g_long_files_loop <- function(.data, anio, ventana_anios, tabla_horiz,
                               directorio, pbar = FALSE) {
   id_par <- sort(unique(.data$id_parametro))
   n <- length(id_par)
-  
+
   archivos <-
     tibble::tibble(id_parametro = id_par) %>%
     dplyr::left_join(sia_parametro, by = "id_parametro") %>%
@@ -870,7 +888,7 @@ g_long_files_loop <- function(.data, anio, ventana_anios, tabla_horiz,
     dplyr::pull(out)
   paleta <- scales::hue_pal()(12)
   for (i in 1:n) {
-    
+
     horiz <- NULL
     if (!missing(tabla_horiz)) {
       v <- dplyr::filter(tabla_horiz, id_parametro == id_par[i])
@@ -882,15 +900,15 @@ g_long_files_loop <- function(.data, anio, ventana_anios, tabla_horiz,
         }
       }
     }
-    
+
     g <- g_long(.data, id_par[i], anio, ventana_anios,
                 colores_meses = paleta, horiz = horiz)
-    
+
     if (!is.null(g))
       ggsave(archivos[i], g, device = "png", path = directorio, scale = .6)
-    
+
     # Increment the progress bar, and update the detail text.
-    if (pbar) 
+    if (pbar)
       shiny::incProgress(1 / n, detail = paste("Nro.", i, "de", n))
   }
   return(file.path(directorio, archivos))

@@ -5,7 +5,7 @@
 \alias{sia_estacion}
 \title{Estaciones de monitoreo}
 \format{
-Tabla con 433 filas y 17
+Tabla con 429 filas y 17
 columnas:
 
 \describe{

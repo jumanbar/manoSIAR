@@ -467,13 +467,13 @@
 # . usuarios -----
 
 #' Tabla con lista de usuarios
-#' 
+#'
 #' La lista de usuarios que han cargado datos de muestras a las tablas del SIA.
 #'
 #' @seealso \code{\link{sia_datos_muestra_parametros}}
 #'
-#' @format Tabla con `r nrow(usuario)` filas y
-#' `r ncol(usuario)` columnas:
+#' @format Tabla con `r nrow(usuarios)` filas y
+#' `r ncol(usuarios)` columnas:
 #'
 #'   \describe{
 #'
@@ -601,7 +601,7 @@
 #'
 #' ```
 #'
-#' cp <- codigos_param %>% 
+#' cp <- codigos_param %>%
 #'   dplyr::filter(!is.na(id_parametro)) %>%
 #'   dplyr::select(grupo, codigo_nuevo, id_parametro)
 #'

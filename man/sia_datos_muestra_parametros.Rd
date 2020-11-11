@@ -5,7 +5,7 @@
 \alias{sia_datos_muestra_parametros}
 \title{Tabla con datos de infambientalbd}
 \format{
-Tabla con 237957 filas y
+Tabla con 230676 filas y
 17)` columnas:
 
 \describe{

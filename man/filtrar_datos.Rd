@@ -46,6 +46,14 @@ Función que filtra la tabla \code{\link{datos_sia}} (u otra tabla con un
 conjunto de columnas adecuado) de manera similar a la forma en que se extraen
 los datos en la aplicación shiny iSIA.
 }
+\details{
+El uso del argumento \code{orden_est} equivale, salvo algunas excepciones (que son
+anunciadas con warnings), a ejecutar:
+
+\code{.data$codigo_pto <- factor(.data$codigo_pto, levels = orden_est)}
+
+Nota: \code{codigo_pto} es la columna con los nombres de las estaciones.
+}
 \examples{
 filtrar_datos(datos_sia, 5, 6)
 filtrar_datos(datos_sia, 5, 11)

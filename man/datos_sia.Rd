@@ -132,7 +132,7 @@ La tibble \code{datos_sia} tiene datos de matriz Aguas superficiales y
 }
 \details{
 Código de creación de las tablas:\preformatted{
-cp <- codigos_param \%>\% 
+cp <- codigos_param \%>\%
   dplyr::filter(!is.na(id_parametro)) \%>\%
   dplyr::select(grupo, codigo_nuevo, id_parametro)
 

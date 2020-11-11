@@ -433,7 +433,7 @@ clasif_tipo_dato <- function(x, metodo = "simple") {
 #'                       user = "shiny_usr", password = "shiny_passwd")
 #' # Para trabajar en máquina windows, en donde ya sé que la
 #' # codificación de caracteres es WIN1252 (en verdad Sys.getlocale() dice
-#' # "Spanish_Uruguay.1252", pero asumo que es lo mismo y en las pruebas que 
+#' # "Spanish_Uruguay.1252", pero asumo que es lo mismo y en las pruebas que
 #' # hice anduvo bien):
 #' if (grepl("DINAMA-OAN11", Sys.info()["nodename"], ignore.case = TRUE)) {
 #'   DBI::dbExecute(con, "SET NAMES 'WIN1252';")
@@ -794,9 +794,47 @@ filtrar_datos <- function(.data,
   return(out)
 }
 
-#' Buscador de parámetros
+#' Ver unidades de un parámetro SIA
 #'
-#' Buscador de `id_parametro`` según un texto (un google de id_parametros).
+#' @param id_parametro integer. id del parámetro (ver
+#'   \code{\link{sia_parametro}})
+#' @param id_matriz integer. id de la matriz (ver \code{\link{sia_matriz}})
+#' @param nombre_clave character. Código o nombre clave del parámetro (ver
+#'   \code{\link{sia_parametro}})
+#'
+#' @return
+#' @export
+#'
+#' @seealso \code{\link{sia_parametro}}
+#'
+#' @examples
+#' unipar(c(2098, 2005))
+#' unipar(nombre_clave = "^PT$")
+#' unipar(nombre_clave = "Colif")
+unipar <- function(id_parametro, id_matriz = 6L, nombre_clave) {
+  if (missing(id_parametro)) {
+    id_parametro <-
+      sia_parametro %>%
+      dplyr::filter(grepl(!!nombre_clave, nombre_clave, ignore.case = TRUE)) %>%
+      dplyr::pull(id_parametro)
+  }
+  out <-
+    sia_parametro %>%
+    dplyr::select(id_parametro, parametro, nombre_clave) %>%
+    dplyr::filter(id_parametro %in% !!id_parametro) %>%
+    dplyr::left_join(sia_param_unidad, by = "id_parametro") %>%
+    dplyr::filter(id_matriz %in% !!id_matriz) %>%
+    dplyr::left_join(sia_unidad, by = c("id_unidad_medida" = "id")) %>%
+    dplyr::select(id_parametro, parametro, nombre_clave, id_matriz,
+                  id_unidad = id_unidad_medida, uni_nombre)
+  return(out)
+}
+
+#' Buscadores de id
+#'
+#' Buscadores de id para las varias tablas importadas del SIA, usando un texto
+#' (un google de id_parametros). El texto o patrón puede ser una expresión
+#' regular (la cual será evaluada por \code{\link[bae]{agrepl}}).
 #'
 #' @param patron character. Patrón (expresión regular tipo
 #'   \code{\link[base]{regex}}).
@@ -809,21 +847,95 @@ filtrar_datos <- function(.data,
 #' @return
 #'
 #' @examples
-#' param_id("fósforo")
-#' param_id("pt", max.distance = 0)
-param_id <- function(patron, ...) {
-  
+#' par_id("fósforo")
+#' par_id("pt", max.distance = 0)
+#' pro_id("merin")
+#' est_id("pascual")
+#' dep_id("cane")
+#' est_id("pascual")
+#' est_id("pascal")
+#' est_id("pscal")
+#' est_id("pacl")
+#' mat_id("agua")
+#' uni_id("mg/l")
+#' uni_id("mg/l", max.distance = 0)
+#' ins_id("cane")
+#' dep_id("flor")
+par_id <- function(patron, ...) {
+
   patron <- toascii(patron)
-  
+
   resA <- agrepl(patron, toascii(sia_parametro$nombre_clave),
                  ignore.case = TRUE,
                  ...)
-  
+
   resB <- agrepl(patron, toascii(sia_parametro$parametro),
                  ignore.case = TRUE,
                  ...)
-  
+
   sia_parametro[resA | resB,]
+}
+
+#' @describeIn par_id Busca programas en \code{\link{sia_programa}} en base al
+#'   campo `nombre_programa` de dicha tabla.
+pro_id <- function(patron, ...) {
+  dplyr::filter(sia_programa, agrepl(toascii(patron),
+                                     toascii(nombre_programa),
+                                     ignore.case = TRUE, ...))
+
+}
+
+#' @describeIn par_id Busca estaciones en \code{\link{sia_estacion}} en base a
+#'   los campos `codigo_pto` y `estacion` de dicha tabla.
+est_id <- function(patron, ...) {
+  patron <- toascii(patron)
+
+  resA <- agrepl(patron, toascii(sia_estacion$codigo_pto),
+                 ignore.case = TRUE,
+                 ...)
+
+  resB <- agrepl(patron, toascii(sia_estacion$estacion),
+                 ignore.case = TRUE,
+                 ...)
+
+  sia_estacion[resA | resB,]
+
+}
+
+#' @describeIn par_id Busca matrices en \code{\link{sia_matriz}} en base al
+#'   campo `nombre` de dicha tabla.
+mat_id <- function(patron, ...) {
+  dplyr::filter(sia_matriz, agrepl(toascii(patron),
+                                   toascii(nombre),
+                                   ignore.case = TRUE, ...))
+
+}
+
+#' @describeIn par_id Busca unidades en \code{\link{sia_unidad}} en base al
+#'   campo `uni_nombre` de dicha tabla.
+uni_id <- function(patron, ...) {
+  dplyr::filter(sia_unidad, agrepl(toascii(patron),
+                                   toascii(uni_nombre),
+                                   ignore.case = TRUE, ...))
+
+}
+
+#' @describeIn par_id Busca instituciones en \code{\link{sia_institucion}} en
+#'   base al campo `nombre` de dicha tabla.
+ins_id <- function(patron, ...) {
+  dplyr::filter(sia_institucion, agrepl(toascii(patron),
+                                 toascii(nombre),
+                                 ignore.case = TRUE, ...))
+
+}
+
+#' @describeIn par_id Busca departamentos en \code{\link{sia_departamento}} en
+#'   base al campo `dep_nombre` de dicha tabla.
+dep_id <- function(patron, ...) {
+  dplyr::filter(sia_departamento, agrepl(toascii(patron),
+                                         toascii(dep_nombre),
+                                         ignore.case = TRUE, ...))
+
 }
 
 #' Convertir valores del SIA en numéricos

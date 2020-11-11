@@ -37,9 +37,9 @@ d <- dplyr::filter(datos_sia, id_matriz == 6L) \%>\%
   dplyr::select(-parametro, -id_tipo_dato, -tipo_dato, -grupo, -codigo_nuevo)
 ancho(d)
 
-# Cómo usar ancho en lugar de ancho_old:
+# CÃ³mo usar ancho en lugar de ancho_old:
 datos_sia \%>\%
-  # Primero filtrar para tener sólo 2 parámetros:
+  # Primero filtrar para tener sÃ³lo 2 parÃ¡metros:
   dplyr::filter(id_programa == 4, id_parametro \%in\% c(2017, 2021)) \%>\%
   ancho \%>\%
   select(matches("^SatO |^OD ")) \%>\%

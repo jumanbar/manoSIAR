@@ -7,8 +7,8 @@
 iet(x)
 }
 \arguments{
-\item{x}{numeric: valores de concentración de fósforo total, en microgramos
-por litro.}
+\item{x}{numeric: valores de concentración de fósforo total (id_parametro =
+2090), en microgramos por litro (\verb{µg P/L}; id_unidad = 1054).}
 }
 \value{
 Un vector numérico con los valores del IET.
