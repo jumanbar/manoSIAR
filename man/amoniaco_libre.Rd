@@ -2,9 +2,12 @@
 % Please edit documentation in R/informes.R
 \name{amoniaco_libre}
 \alias{amoniaco_libre}
+\alias{amoniaco_libre_add}
 \title{Cálculo de Amoníaco Libre (NH3L)}
 \usage{
 amoniaco_libre(NH4, pH, Temp)
+
+amoniaco_libre_add(.data)
 }
 \arguments{
 \item{NH4}{numeric. Nitrógeno amoniacal (id_parametro = 2090) en unidades de
@@ -14,10 +17,38 @@ amoniaco_libre(NH4, pH, Temp)
 
 \item{Temp}{numeric. Nitrógeno amoniacal (id_parametro = 2032) en unidades de
 \code{ºC} (id_unidad = 18).}
+
+\item{.data}{Tabla con datos con ciertas características (ej.:
+\code{\link{datos_sia}}). Debe incluir los id_parametros 2032, 2018 y 2090
+(Temperatura, pH y NH4).}
 }
 \value{
 
 }
 \description{
 Se calcula NH3 a partir de NH4 según \href{ceqg-rcqe.ccme.ca/en/index.html}{Canadian Water Quality Guidelines for the Protection of Aquatic Life} (\href{http://ceqg-rcqe.ccme.ca/download/en/141}{ver Ammonia})
+}
+\section{Functions}{
+\itemize{
+\item \code{amoniaco_libre_add}: Agrega el parámetro Amoníaco Libre a una tabla
+"alta"
+}}
+
+\examples{
+amoniaco_libre(.065, 6.82, 16.9)
+
+d <- data.frame(NH4 = c(0.021, 0.046, 0.04),
+                pH = c(7.16, 6.87, 7.49),
+                Tem = c(12.6, 14.9, 12.8))
+dplyr::mutate(d, NH3L = amoniaco_libre(NH4, pH, Tem))
+
+d <-
+  datos_sia \%>\%
+  filtrar_datos(id_programa = 10L,
+                rango_fechas = 2019,
+                id_parametro = c(2032L, 2018L, 2090L),
+                tipo_punto_id = 1L) \%>\%
+  amoniaco_libre_add()
+dplyr::group_by(d, param) \%>\% tsummary(valor)
+hist(log10(d[d$id_parametro == 2091L,]$valor))
 }

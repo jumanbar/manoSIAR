@@ -33,8 +33,13 @@ de otras columnas agregadas en el código de la app iSIA (en el reactive
 id_tipo_dato y tipo_dato.
 }
 \examples{
-d <- dplyr::filter(datos_sia, id_matriz == 6L) \%>\%
-  dplyr::select(-parametro, -id_tipo_dato, -tipo_dato, -grupo, -codigo_nuevo)
+d <- filtrar_datos(datos_sia,
+                   id_programa = 10L,
+                   rango_fechas = c("2019-01-01", "2020-12-31"),
+                   id_parametro = c(2099, 2098)) \%>\%
+  dplyr::select(codigo_pto, fecha_muestra, id_parametro, param, id_unidad,
+                uni_nombre, limite_deteccion, limite_cuantificacion, valor)
+print(d)
 ancho(d)
 
 # CÃ³mo usar ancho en lugar de ancho_old:
@@ -42,6 +47,6 @@ datos_sia \%>\%
   # Primero filtrar para tener sÃ³lo 2 parÃ¡metros:
   dplyr::filter(id_programa == 4, id_parametro \%in\% c(2017, 2021)) \%>\%
   ancho \%>\%
-  select(matches("^SatO |^OD ")) \%>\%
+  dplyr::select(tidyselect::matches("^SatO$|^OD$")) \%>\%
   plot
 }

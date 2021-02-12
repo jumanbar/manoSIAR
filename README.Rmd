@@ -20,23 +20,24 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-Este paquete contiene funciones y datos utilizados para trabajar con las bases datos del SIA. De momento abarca muchas tareas, tales como las que se usan en las aplicaciónes Shiny (vSIA, hSIA e iSIA), o funciones para hacer gráficas que sirven para hacer informes.
+Este paquete contiene funciones y datos utilizados para trabajar con las bases datos del SIA. De momento no es muy grande pero abarca tareas diversas, tales como las que se usan en las aplicaciónes Shiny (vSIA, hSIA e iSIA), o funciones para hacer gráficas que sirven para hacer informes.
 
 Tiene además un grupo no menor de tablas, incluyendo varias de la base de datos INFAMBIENTALBD del SIA.
 
 ## Tablas de infambiental (base de datos)
 
-Es la base de datos en donde se almacenan muchos de los datos e información concerniente al SIA. En particular, tiene datos tomados de las matrices aguas superficiales y sedimentos (al 15/10/2020), así como informaciones relativas a los programas de monitoreo (estaciones, cuencas, etc), parámetros (nombres, unidades de medida según matriz, etc.).
+Es la base de datos en donde se almacena mucha información concerniente al SIA, especialmente la de monitoreos de aguas y sedimentos, incluyendo lo relativo a los programas de monitoreo (estaciones, cuencas, etc), parámetros (nombres, unidades de medida según matriz, etc.). No incluye datos de aire.
 
-Todas las tablas traídas de infambiental se nombran con el prefijo *sia_* seguido por el nombre de la tabla encontrado en infambiental. Ejemplo: la tabla `sia_parametro` contiene la misma información que la tabla `parametro` de infambiental.
+Este paquete cuenta con copias de muchas de las tablas contenidas en esta base de datos, en [clase](https://bookdown.org/jboscomendoza/r-principiantes4/tipos-de-datos.html) [**data.frame**](https://bookdown.org/jboscomendoza/r-principiantes4/data-frames.html) (en verdad, usa una variante más moderna: [tibble](https://r4ds.had.co.nz/tibbles.html)).
 
-Como se estila usar en las bases de datos, estas tablas suelen tener una columna dedicada a un indentificador numérico que es único para cada entrada, el cual generalmente se llama `id_...` o simplemente `id`. Por ejemplo, en la tabla `sia_parametro`, la columna `id_parametro` identifica a cada parámetro con un número entero positivo. Siempre que haya algún tipo de ambigüedad respecto a qué parámetro nos referimos, podemos usar el `id_parametro` para asegurarnos de que trabajamos con el que nos interesa. Por ejemplo, el Fósforo Total figura con el `id_parametro` = 2098:
+Todas las tablas traídas de infambiental se nombran combinando el prefijo *sia_* con el nombre original. Ejemplo: la tabla `sia_parametro` contiene la misma información que la tabla `parametro` de infambiental.
+
+Como se estila en bases de datos, estas tablas generalmente hay una columna dedicada a un "id": un indentificador numérico que es único para cada entrada, la cual generalmente se llama `id_...` o simplemente `id`. Por ejemplo, en la tabla `sia_parametro`, la columna `id_parametro` identifica a cada parámetro con un número entero positivo. El rol de los identificadores es evitar ambigüedades. Por ejemplo, podemos usar el `id_parametro` para asegurarnos de que trabajamos con el parámetro que nos interesa; en el caso del Fósforo Total figura, el `id_parametro` es 2098:
 
 
 <!-- ```{r sia_parametro} -->
 ``` r
 library(manoSIAR)
-# data(sia_parametro)
 dplyr::filter(sia_parametro, id_parametro == 2098)
 ```
 
@@ -44,9 +45,24 @@ dplyr::filter(sia_parametro, id_parametro == 2098)
 |------------:|:-------------|:---------|:------------|---------:|:-----------|:--------------|
 |         2098|Fósforo total |FALSE     |PT           |         9|TRUE        |NA             |
 
-Aún si cambiamos los textos de columnas como `nombre_clave` o `parametro`, el `id_parametro` siempre será 2098.
+> **NOTA**: En general, al exportar datos desde infambiental (i.e.: muestras con valores de parámetros), la regla que uso es usar nombres de `id` descriptivos, para las tablas principales (programas, estaciones, parámetros, etc). Entonces, si bien originalmente hay una columna `id` en la tabla `estacion`, cuando hago la importación se convierte en `id_estacion`. Esto aplica tanto para iSIA como para los datos contenidos en este paquete. De todas formas hay algunas tablas que mantienen los nombres de su
 
-**NOTA**: En general exportar datos desde infambiental (i.e.: muestras con valores de parámetros), la regla que uso es usar nombres de `id` descriptivos. Entonces, el `id` importado de la tabla `estacion` se convierte en `id_estacion` a la hora de extraer los datos de las muestras. De todas formas, en pro de la consistencia entre las tablas `sia_...` y la base de datos, los nombres de las columnas se mantienen idénticos en las tablas descriptas a continuación:
+### Buscadores de ID
+
+El paquete incluye buscadores de id para las varias tablas importadas del SIA, usando un texto (i.e.: un Google de ids). El texto o patrón puede ser una expresión regular (la cual se pasa internamente a [`agrepl`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/agrep)).
+
+pro_id: Busca programas en sia_programa en base al campo nombre_programa de dicha tabla.
+
+est_id: Busca estaciones en sia_estacion en base a los campos codigo_pto y estacion de dicha tabla.
+
+mat_id: Busca matrices en sia_matriz en base al campo nombre de dicha tabla.
+
+uni_id: Busca unidades en sia_unidad en base al campo uni_nombre de dicha tabla.
+
+ins_id: Busca instituciones en sia_institucion en base al campo nombre de dicha tabla.
+
+dep_id: Busca departamentos en sia_departamento en base al campo dep_nombre de dicha tabla.
+
 
 <!--
 ## Installation
@@ -56,7 +72,6 @@ You can install the released version of manoSIAR from [CRAN](https://CRAN.R-proj
 ``` r
 install.packages("manoSIAR")
 ```
--->
 
 El paquete se puede descargar desde [GitHub](https://github.com/) mediante los comandos:
 
@@ -64,8 +79,10 @@ El paquete se puede descargar desde [GitHub](https://github.com/) mediante los c
 # install.packages("devtools")
 devtools::install_github("jumanbar/manoSIAR")
 ```
+-->
 
-## Ejemplos
+
+## Funciones (cálculos)
 
 ### Índice de estado trófico (IET)
 
@@ -76,6 +93,23 @@ library(manoSIAR)
 iet(c(25, 50, 75, 250))
 plot(iet(1:300), ylab = "IET", xlab = "PT (ug/L)", pch = 20)
 ```
+
+### Tabla con categorías de IET
+
+Toma datos de SIA y 
+
+```{r, warnings=FALSE}
+# d <- filtrar_datos(datos_sia, id_programa = 10L, rango_fechas = 2019)
+# iet_tabla(d)
+# iet_tabla(d, mes)
+# d <- filtrar_datos(datos_sia, id_programa = 10L,
+#                    rango_fechas = c("2009-01-01", "2019-12-31"))
+# iet_tabla(d, anio)
+# iet_tabla(d, anio) %>%
+#   dplyr::group_by(anio) %>%
+#   dplyr::summarise(n = sum(!is.na(IET)), IET = mean(IET, na.rm = TRUE))
+```
+
 
 
 - - -

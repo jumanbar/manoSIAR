@@ -35,7 +35,7 @@ en microgramos por litro.
 \details{
 Cálculo:
 
-\deqn{ IET = 10 \times (6-\frac{0.42 - 0.36 \times ln(\overline{PT\% (\mu g/L)})}{ln(2)}) - 20}{\% IET = 10 (6 - (.42 - .36 log(PT \mu g/L)) / log(2)) -s 20}
+\deqn{ IET = 10 \times (6-\frac{0.42 - 0.36 \times ln(\overline{PT\% (\mu g/L)})}{ln(2)}) - 20}{\% IET = 10 (6 - (.42 - .36 log(PT \mu g/L)) / log(2)) - 20}
 }
 \section{Functions}{
 \itemize{
