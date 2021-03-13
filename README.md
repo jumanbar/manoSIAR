@@ -70,7 +70,7 @@ library(manoSIAR)
 # Cálculo de una media geométrica con valores aleatorios:
 x <- rnorm(100, 5)
 media_geom(x)
-#> [1] 4.854247
+#> [1] 4.945037
 
 # Uso de tsummary para resumir datos, usando el conjunto de datos iris:
 iris %>% tsummary(Sepal.Length)

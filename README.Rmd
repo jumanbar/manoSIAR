@@ -1,5 +1,8 @@
 ---
-output: github_document
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
 editor_options:
   chunk_output_type: console
 ---
@@ -29,6 +32,7 @@ knitr::opts_chunk$set(
 )
 library(tibble)
 library(manoSIAR)
+set.seed(0)
 # Esto genera mensajes de advertencia normales:
 d <- filtrar_datos(datos_sia, id_programa = 10L, id_matriz = 6L,
                    rango_fechas = c('2019-01-01', '2019-12-31'),
