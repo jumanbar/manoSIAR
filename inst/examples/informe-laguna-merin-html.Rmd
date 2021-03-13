@@ -72,17 +72,19 @@ t_eti <- t_eti_add(id_parametro = c(2032L, 2017L, 2009L, 2018L, 2035L, 2028L,
                                     2000L, 2111L),
                    etiqueta = c(expression('Temperatura (ºC)'), 
                                 expression('OD (mg/L)'), 
-                                expression('Cond (μS/cm)'),
+                                expression('Cond ('*mu*'S/cm)'),
                                 expression('pH'), 
                                 expression('Turbidez (UNT)'), 
                                 expression('ST (mg/L)'),
                                 expression('NT (mg/L)'), 
-                                expression('PT (μg/L)'), 
-                                expression('PO'[4]*' (μg-P/L)'), 
-                                expression('NH'[3]*' (μg-N/L)'), 
+                                expression('PT ('*mu*'g/L)'), 
+                                # Cambiar todos los mu para que sean así:
+                                expression('PO'[4]*' ('*mu*'g-P/L)')
+                                # expression('PO'[4]*' (μg-P/L)'), 
+                                expression('NH'[3]*' ('*mu*'g-N/L)'), 
                                 expression('NO'[3]*' (mg-N/L)'), 
                                 expression('NO'[2]*' (mg-N/L)'),
-                                'Clo-a (μg/L)',
+                                expression('Clo-a ('*mu*'g/L)'),
                                 'ColiTrm_MF (UFC/100mL)'))
 
 ```

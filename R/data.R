@@ -668,45 +668,6 @@
 #' La tibble `datos_sia` tiene datos de matriz Aguas superficiales y
 #' `datos_sia_sed` de Sedimentos. Fecha de extracción: 2020-11-04.
 #'
-#' Código de creación de las tablas:
-#'
-#' ```
-#' cp <- codigos_param %>%
-#'   dplyr::filter(!is.na(id_parametro)) %>%
-#'   dplyr::select(grupo, codigo_nuevo, id_parametro)
-#' 
-#' datos_sia <-
-#'   consulta_muestras(con, id_matriz = 6L) %>%
-#'   valores_numericos(metodo = "informe", filtrar_no_num = TRUE) %>%
-#'   dplyr::left_join(cp, by = "id_parametro") %>%
-#'   dplyr::mutate(param = dplyr::if_else(is.na(codigo_nuevo),
-#'                                        nombre_clave,
-#'                                        codigo_nuevo),
-#'                 anio = as.integer(anio),
-#'                 mes = as.integer(mes)) %>%
-#'   dplyr::left_join(
-#'     dplyr::select(cuencas_informes, nombre_subcuenca_informes, id_estacion),
-#'     by = "id_estacion") %>%
-#'   dplyr::select(-id_estado)
-#' 
-#' save(datos_sia, file = "data/datos_sia.rda")
-#' 
-#' datos_sia_sed <- 
-#'   consulta_muestras(con, id_matriz = 11L) %>%
-#'   valores_numericos(metodo = "informe", filtrar_no_num = TRUE) %>%
-#'   dplyr::left_join(cp, by = "id_parametro") %>% 
-#'   dplyr::mutate(param = dplyr::if_else(is.na(codigo_nuevo), 
-#'                                        nombre_clave, 
-#'                                        codigo_nuevo), 
-#'                 anio = as.integer(anio), mes = as.integer(mes)) %>%
-#'   dplyr::left_join(
-#'     dplyr::select(cuencas_informes, nombre_subcuenca_informes, id_estacion),
-#'     by = "id_estacion") %>%
-#'   dplyr::select(-id_estado)
-#' 
-#' save(datos_sia_sed, file = "data/datos_sia_sed.rda")
-#' ```
-#'
 #' @format Tabla con `r nrow(datos_sia)` filas y `r ncol(datos_sia)` columnas:
 #'
 #'   \describe{

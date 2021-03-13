@@ -1,0 +1,41 @@
+---
+title: "Gráficos"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{graficos}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(manoSIAR)
+# Gráfico individual para el fosfato:
+g_mes_pto(d, 2097)
+
+# (Se trata de un tipo de gráfico para combinar, de ahí que no esté la leyenda)
+
+# La etiqueta puede mejorarse. Para eso está la función t_eti_add:
+# 
+# # La etiqueta puede mejorarse. Para eso está la función t_eti_add:
+
+etiquetas <- t_eti_add(id_parametro = c(2098L, 2101L, 2099L, 2097L, 2091L),
+                       c(
+                         expression('PT ('*mu*'g-P/L)'),
+                         expression('NO'[2]*' (mg-N/L)'),
+                         expression('NO'[3]*' (mg-N/L)'),
+                         expression('PO'[4]*' ('*mu*'g-P/L)'),
+                         expression('NH'[3]*' ('*mu*'g-N/L)')
+                       )
+                       )
+
+g_mes_pto_all(d, id_parametro = c(2098, 2101, 2099, 2097, 2102, 2091), ncol = 3,
+              t_eti = etiquetas)
+```
+

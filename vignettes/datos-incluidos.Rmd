@@ -1,0 +1,32 @@
+---
+title: "Datos incluidos"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{datos-incluidos}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+El paquete viene con dos conjuntos de datos extraídos del SIA: ver `?datos_sia` o `?datos_sia_sed` para acceder a la documentación de estas tablas, con datos de aguas superficiales y de sedimentos, respectivamente.
+
+Dichas tablas tienen todos los datos encontrados en SIA, a la fecha en que fueron extraidos, para todos los programas y parámetros disponibles. El objetivo de estas tablas es el de hacer pruebas, ejemplos y código que luego se puede aplicar a datos más actualizados (extraídos con iSIA).
+
+Dado que se trata de tablas de gran tamaño (`datos_sia` tiene 223112 filas y 39 columnas), es conveniente filtrarlos según el subconjunto de interés. Para esto es que el paquete cuenta con la función `filtrar_datos`, que cumple la misma función que los filtros presentes en la aplicación iSIA.
+
+El siguiente es un ejemplo datos similares al ejemplo usados anteriormente (la diferencia es el rango de fechas):
+
+```{r}
+library(manoSIAR)
+d <- filtrar_datos(datos_sia, id_programa = 10L, id_matriz = 6L,
+                   rango_fechas = c('2015-01-01', '2019-12-31'),
+                   tipo_punto_id = 1L,
+                   id_parametro = c(2098, 2101, 2099, 2097, 2102, 2091))
+
+g_long(d, 2098, anio = 2019)
+```

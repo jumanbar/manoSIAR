@@ -3,8 +3,9 @@ test_that("t_eti_add: crea tibble", {
 })
 
 test_that("t_eti_add: id_parametro no integer (warning)", {
-  testthat::expect_warning(t_eti_add(2098, "PT (ug/L)"),
-                           "se coerciona a integer")
+  testthat::expect_warning(
+    t_eti_add("2098", "PT (ug/L)"),
+    "id_parametro no es integer --> se coerciona a integer")
 })
 
 test_that("t_eti_add: nombres de columnas", {

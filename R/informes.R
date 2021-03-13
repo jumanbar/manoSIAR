@@ -170,7 +170,8 @@ amoniaco_libre_add <- function(.data) {
       id_tipo_dato = 7L,
       tipo_dato = "OTRO",
       grupo = "Par\u00e1metros Inorg\u00e1nicos no Met\u00e1licos",
-      codigo_nuevo = "NH3L"
+      codigo_nuevo = "NH3L",
+      nombre_clave = 'NH3'
     ) %>%
     # 3. Eliminar las columnas de pH, Temperatura y NH4:
     dplyr::select(-tidyselect::starts_with("pH"),
@@ -337,10 +338,10 @@ t_eti_add <- function(id_parametro = NULL, etiqueta) {
   if (is.null(id_parametro))
     return(out)
 
-  if (!is.integer(id_parametro)) {
-    id_parametro <- as.integer(id_parametro)
+  if (!is.numeric(id_parametro)) {
     warning("id_parametro no es integer --> se coerciona a integer")
   }
+  id_parametro <- as.integer(id_parametro)
 
   out <- dplyr::filter(out, !(id_parametro %in% !!id_parametro))
 
@@ -407,12 +408,16 @@ eti <- function(id_parametro, t_eti) {
 }
 
 #' Graficos de parámetros por mes
+#' 
+#' Conjunto de funciones para crear gráficos de informes.
 #'
 #' `g_mes_pto` grafica los valores de un parámetro por mes, usando colores para
 #' diferenciar las estaciones; `g_est_bar` muestra promedios y desvíos
 #' estándares de un parámetro, según las estaciones encontradas en `.data`
-#' (internamente procesa los datos con `d_est_bar`); `g_cue_box` Grafica valores
-#' de un parámetro con gráficos de cajas (boxplot), para comparar subcuencas.
+#' (internamente procesa los datos con `d_est_bar`); `d_est_bar` perpara datos
+#' para la función anterior, incluyendo modas y desvíos; `g_cue_box` Grafica 
+#' valores de un parámetro con gráficos de cajas (boxplot), para comparar
+#' subcuencas.
 #' Las versiones `[..funcion..]_all` agrupan en una misma figura los gráficos
 #' generados con `[..funcion..]` para el total de parámetros encontrados en
 #' `id_parametro`.

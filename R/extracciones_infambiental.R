@@ -864,13 +864,19 @@ unipar <- function(id_parametro, id_matriz = 6L, nombre_clave) {
 #' dep_id("flor")
 par_id <- function(patron, ...) {
 
-  patron <- toascii(patron)
+  patron <- manoSIAR:::toascii(tolower(patron))
+  
+  w <- which(manoSIAR:::toascii(tolower(sia_parametro$nombre_clave)) == patron)
+  if (length(w)) return(sia_parametro[w,])
 
-  resA <- agrepl(patron, toascii(sia_parametro$nombre_clave),
+  w <- which(manoSIAR:::toascii(tolower(sia_parametro$parametro)) == patron)
+  if (length(w)) return(sia_parametro[w,])
+  
+  resA <- agrepl(patron, manoSIAR:::toascii(sia_parametro$nombre_clave),
                  ignore.case = TRUE,
                  ...)
 
-  resB <- agrepl(patron, toascii(sia_parametro$parametro),
+  resB <- agrepl(patron, manoSIAR:::toascii(sia_parametro$parametro),
                  ignore.case = TRUE,
                  ...)
 

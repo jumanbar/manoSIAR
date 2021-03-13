@@ -2,7 +2,7 @@
 title: "Introducción"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{manipular-datos-sia}
+  %\VignetteIndexEntry{introduccion}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
