@@ -337,7 +337,8 @@ d %>%
 #### Desventajas
 
   - Es más complicado realizar cálculos que involucran varios datos de
-    la misma muestra (razón por la que existe `amoniaco_libre_add`)
+    la misma muestra, como es el caso del Amoníaco Libre (razón por la
+    que existe `amoniaco_libre_add`)
 
   - También es más complicado realizar gráficos de dispersión entre
     diferentes parámetros (razón por la cual existe la función `ancho`;
