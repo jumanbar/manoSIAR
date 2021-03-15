@@ -63,11 +63,10 @@ un ejemplo (en construcción) con datos del programa Laguna Merín para
 tomar de referencia:
 
 ``` r
-library(manoSIAR)
 # Tres formatos de salda posibles: PDF, HTML y DOC
-demo('informe-laguna-merin-pdf')
-demo('informe-laguna-merin-html')
-demo('informe-laguna-merin-doc')
+demo('informe-laguna-merin-pdf',  'manoSIAR')
+demo('informe-laguna-merin-html', 'manoSIAR')
+demo('informe-laguna-merin-doc',  'manoSIAR')
 ```
 
 ### Algunos ejemplos simples
