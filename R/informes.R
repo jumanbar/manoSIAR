@@ -197,13 +197,15 @@ amoniaco_libre_add <- function(.data) {
 #' En general puede considerarse como el resultado de \code{prod(x) ^ (1 /
 #' length(x))}, aunque en lugar de usar \code{^(1/length(x))} se usa la función
 #' \code{\link{raiz}}, diseñada para contemplar casos particulares.
+#' 
+#' Elimina automáticamente los NAs contenidos en \code{x}.
 #'
 #' @seealso \href{https://es.wikipedia.org/wiki/Media_geom%C3%A9trica}{Artículo
 #'   en Wikipedia}, \code{\link{raiz}}
 #'
 #' @keywords arith univar
 #'
-#' @param x numeric
+#' @param x numeric. Vector numérico
 #'
 #' @return Valor numérico equivalente a la media geométrica de x
 #'
