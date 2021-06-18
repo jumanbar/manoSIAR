@@ -87,6 +87,7 @@ El siguiente es un ejemplo que usa datos extraídos de iSIA (formato 'largo'):
 Afortunadamente, no es necesario descargar estos datos en particular, ya que se encuentran en el paquete mismo. Vamos a crear una data.frame llamada `d`, usando la función `filtrar_datos`, que simula los filtros de iSIA:
 
 ```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
 library(siabox)
 d <- filtrar_datos(datos_sia, 
                    id_programa = 10L,

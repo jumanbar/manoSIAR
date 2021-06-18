@@ -117,6 +117,7 @@ llamada `d`, usando la función `filtrar_datos`, que simula los filtros
 de iSIA:
 
 ``` r
+library(tidyverse)
 library(siabox)
 d <- filtrar_datos(datos_sia, 
                    id_programa = 10L,
@@ -537,7 +538,7 @@ iet
 #> function(PT) {
 #>   10 * (6 - (0.42 - 0.36 * log(PT)) / log(2)) - 20
 #> }
-#> <bytecode: 0x565488f93130>
+#> <bytecode: 0x5556b41d0418>
 #> <environment: namespace:siabox>
 ```
 
