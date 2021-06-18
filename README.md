@@ -91,9 +91,9 @@ un ejemplo (en construcción) con datos del programa Laguna Merín para
 tomar de referencia:
 
 ``` r
-demo_lm()      # HTML
-demo_lm('pdf') # PDF
-demo_lm('doc') # DOC
+siabox::demo_lm()      # HTML
+siabox::demo_lm('pdf') # PDF
+siabox::demo_lm('doc') # DOC
 ```
 
 ## Con extracciones de iSIA
@@ -529,7 +529,7 @@ iet
 #> function(PT) {
 #>   10 * (6 - (0.42 - 0.36 * log(PT)) / log(2)) - 20
 #> }
-#> <bytecode: 0x55af6d2bd368>
+#> <bytecode: 0x55b776a21d58>
 #> <environment: namespace:siabox>
 ```
 
