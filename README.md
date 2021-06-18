@@ -537,7 +537,7 @@ iet
 #> function(PT) {
 #>   10 * (6 - (0.42 - 0.36 * log(PT)) / log(2)) - 20
 #> }
-#> <bytecode: 0x558b384d40e8>
+#> <bytecode: 0x565488f93130>
 #> <environment: namespace:siabox>
 ```
 
@@ -646,3 +646,8 @@ Algunas notas:
 
 -   La función `devtools::document()` (Ctrl+Shift+D) sirve para
     actualizar los archivos de documentación.
+
+-   Las viñetas compiladas no se incluyen en el repositorio github, ya
+    que “doc” figura en el `.gitignore`. La idea es instalar con archivo
+    bundle o con la opción `build_vignettes = TRUE` de
+    `devtools::install_github`, para que estén disponibles.
