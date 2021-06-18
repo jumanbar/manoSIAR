@@ -8,8 +8,7 @@ siabox
     -   [Con datos incluidos en el
         paquete](#con-datos-incluidos-en-el-paquete)
     -   [Cálculos útiles](#cálculos-útiles)
--   [Construcción colectiva del
-    paquete](#construcción-colectiva-del-paquete)
+-   [Construcción colectiva](#construcción-colectiva)
     -   [Enviar código ‘suelto’](#enviar-código-suelto)
     -   [Crear una función nueva](#crear-una-función-nueva)
     -   [Modificar una función
@@ -435,7 +434,7 @@ media_geom(x)
 #> [1] 7.942157
 ```
 
-# Construcción colectiva del paquete
+# Construcción colectiva
 
 Al momento del lanzamiento de este paquete, el universo de funciones
 será limitado, naturalmente. Por esta razón es de interés considerar
@@ -517,7 +516,7 @@ iet
 #> function(PT) {
 #>   10 * (6 - (0.42 - 0.36 * log(PT)) / log(2)) - 20
 #> }
-#> <bytecode: 0x558051b7f0f0>
+#> <bytecode: 0x557bd4f1eb30>
 #> <environment: namespace:siabox>
 ```
 

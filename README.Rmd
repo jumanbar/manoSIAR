@@ -262,9 +262,7 @@ mean(x)
 media_geom(x)
 ```
 
-
-
-# Construcción colectiva del paquete
+# Construcción colectiva
 
 Al momento del lanzamiento de este paquete, el universo de funciones será limitado, naturalmente. Por esta razón es de interés considerar posibles aportes de usaries a la construcción del mismo.
 
