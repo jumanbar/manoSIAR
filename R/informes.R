@@ -279,6 +279,12 @@ raiz <- function(x, n) {
 tsummary <- function(.data, columna) {
   # grupo <- quos(...)
   columna <- dplyr::enquo(columna)
+  if (quo_name(columna) %in% c('n', 'Min', '1er Cu', 'Media', 'Mediana',
+                               '3er Cu', 'Max')) {
+    .data <- dplyr::rename(.data, x = !!columna)
+    columna <- rlang::sym('x')
+  }
+    
   .data %>%
     # select(!!!grupo,!!columna) %>%
     # dplyr::filter(!is.na(!!columna)) %>%
