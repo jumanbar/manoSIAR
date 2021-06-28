@@ -42,6 +42,8 @@ devtools::install_github("jumanbar/siabox", build_vignettes = TRUE)
 > de la documentación. De todas formas, puede ver las viñetas en formato
 > markdown, en la carpeta [vignettes](vignettes)
 
+Ver actualizaciones: [log.md](log.md)
+
 # Introducción
 
 <!-- badges: start -->
@@ -538,7 +540,7 @@ iet
 #> function(PT) {
 #>   10 * (6 - (0.42 - 0.36 * log(PT)) / log(2)) - 20
 #> }
-#> <bytecode: 0x5556b41d0418>
+#> <bytecode: 0x559f6622e3d0>
 #> <environment: namespace:siabox>
 ```
 
