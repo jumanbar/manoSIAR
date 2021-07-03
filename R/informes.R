@@ -32,7 +32,6 @@
 #'   solamente por codigo_pto, pero se pueden agregar otras como mes o anio (ver
 #'   \code{\link{datos_sia}}).
 #'
-#' @examples
 #' @return \code{iet}: Un vector numérico con los valores del IET.
 #'
 #' \code{iet_tabla}: data.frame con valores de IET por codigo_pto y las columnas
@@ -138,15 +137,15 @@ amoniaco_libre <- function(NH4, pH, Temp) {
 #'
 #' @export
 amoniaco_libre_add <- function(.data) {
-  
+
   # Para pruebas: datos sin suficientes parámetros:
-  # 
+  #
   # 3294561 ph y temp
   # 3294191 NH4 y temp
-  # 
+  #
   # Para mensaje de error (parámetros ausentes):
   # .data <- dplyr::filter(datos_sia, id_muestra == 3294561)
-  # 
+  #
   # Para mensaje de advertencia (sin parámetros suficiente para al menos una
   # muestra), pero sin generar mensaje de error anterior:
   # .data <- dplyr::filter(datos_sia, id_muestra %in% c(3294191, 3294561))
@@ -162,12 +161,12 @@ amoniaco_libre_add <- function(.data) {
   # w1 <- which(!(.data$id_parametro %in% parnec))
   w2 <- which(.data$id_parametro == 2091L)
   nh3 <- .data[w2,]
-  
+
   # Armar una tabla tipo ancho, evitando el warning por defecto que tira esa
   # función:
   tmp <- suppressWarnings({
       # 1. Tomar Temperatura, pH y NAmoniacal y convertir la tabla a formato ancho:
-      .data[w0,] %>% 
+      .data[w0,] %>%
       dplyr::mutate(param = dplyr::case_when(
         # Cambiar los nombres de los parámetros facilita escribir el código más
         # abajo:
@@ -175,9 +174,9 @@ amoniaco_libre_add <- function(.data) {
         id_parametro == 2018L ~ "pH",
         TRUE ~ "NH4"
       )) %>%
-      ancho 
+      ancho
   })
-  
+
   # Cuando ninguna muestra presente tiene los 3 parámetros necesarios (aún si
   # en el total de .data están todos):
   nas <- with(tmp, is.na(Tem) | is.na(pH) | is.na(NH4))
@@ -186,10 +185,10 @@ amoniaco_libre_add <- function(.data) {
             'par\u00e1metros necesarios simult\u00e1neamente: Tem, pH y NH4',
             '\n--> Se devuelven los datos tal como se ingresaron')
     return(.data)
-  }  
-  
+  }
+
   u <- unipar(2091)
-  
+
   # Para agregar el parámetro NH3L, a la tabla que está en formato "largo", hace
   # falta hacer algunos trucos, que aparecen en el paso '2':
   tmp <- tmp %>%
@@ -216,15 +215,15 @@ amoniaco_libre_add <- function(.data) {
                   -tidyselect::starts_with("NH4"))
 
   jcols <- names(.data)[names(.data) %in% names(tmp)]
-  out <- dplyr::full_join(.data, tmp, by = jcols) %>% 
-    dplyr::mutate(valor = dplyr::if_else(is.na(valor_nuevo), 
-                                         valor, valor_nuevo)) %>% 
+  out <- dplyr::full_join(.data, tmp, by = jcols) %>%
+    dplyr::mutate(valor = dplyr::if_else(is.na(valor_nuevo),
+                                         valor, valor_nuevo)) %>%
     dplyr::select(-valor_nuevo)
-  
+
   w <- which(is.na(out$id_tipo_dato))
   if (length(w))
     out$id_tipo_dato[w] <- 1L
-  
+
   if (nrow(nh3)) {
     # Si se hicieron sustituciones a valores originales de NH3L, se avisa con un
     # warning
@@ -234,7 +233,7 @@ amoniaco_libre_add <- function(.data) {
     if (cant.dife) {
       warning('Se sustituyeron ', cant.dife, ' valores originales de NH3L, ',
               'con una diferencia promedio de ',
-              round(mean(dife, na.rm = TRUE), 3), ' ug/L', 
+              round(mean(dife, na.rm = TRUE), 3), ' ug/L',
               ' (', 100 * round(mean(dife.p), 3), '%)')
     }
   }
@@ -338,7 +337,7 @@ tsummary <- function(.data, columna) {
     .data <- dplyr::rename(.data, x = !!columna)
     columna <- rlang::sym('x')
   }
-    
+
   .data %>%
     # select(!!!grupo,!!columna) %>%
     # dplyr::filter(!is.na(!!columna)) %>%
@@ -547,6 +546,8 @@ eti <- function(id_parametro, t_eti) {
 #'                 id_parametro = p)
 #' g_est_dsv(e, nombre_clave = "PT")
 #' g_est_dsv_all(e, p)
+#' g_est_dsv(e, 2008)
+#' g_est_dsv_all(e, 2098)
 #' g_cue_box(e, p[1])
 g_mes_pto <- function(.data,
                       id_parametro,
@@ -649,6 +650,8 @@ g_mes_pto_all <- function(.data, id_parametro, t_eti, ...) {
     # if (nrow(tmp) == 1L && tmp$group[[1]] == -1)
   }
 
+  if (j == 0 && i == 1) return(lista[[1]])
+
   lista[[j]] <-
     lista[[j]] +
     theme_update(legend.position = "bottom") +
@@ -707,6 +710,7 @@ d_est_bar <- function(.data,
 g_est_dsv <- function(.data,
                       id_parametro,
                       nombre_clave,
+                      legend.position = 'none',
                       ylab,
                       t_eti) {
 
@@ -728,21 +732,11 @@ g_est_dsv <- function(.data,
     ylab <- eti(id_parametro, t_eti)
   }
 
-  out <-
-    d_est_bar(.data, id_parametro, codigo_pto) %>%
-    ggplot() +
-    aes(x = codigo_pto, y = moda) +
-    geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .3,
-                  position = position_dodge(.5), size = .5) +
-    geom_point(position = position_dodge(.5), size = 2, alpha = .7)+
-    labs(y = ylab, x = NULL, colour = "Cuenca")+
-    theme_bw() +
-    theme(panel.grid.minor = element_blank(),
-          text = element_text(size = 10),
-          axis.text.x = element_text(angle=30, vjust=1))
-
+  tmp <-
+    d_est_bar(.data, id_parametro, codigo_pto) 
+  
   # Si no hay datos del parámetro:
-  if (!nrow(out$data)) {
+  if (nrow(tmp) == 1L && is.na(tmp$codigo_pto)) {
     corte <-
       siabox::sia_parametro %>%
       dplyr::filter(id_parametro == !!id_parametro) %>%
@@ -764,6 +758,18 @@ g_est_dsv <- function(.data,
     return(out)
   }
   
+  out <- tmp %>%
+    ggplot() +
+    aes(x = codigo_pto, y = moda) +
+    geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .3,
+                  position = position_dodge(.5), size = .5) +
+    geom_point(position = position_dodge(.5), size = 2, alpha = .7)+
+    labs(y = ylab, x = NULL, colour = "Cuenca")+
+    theme_bw() +
+    theme(panel.grid.minor = element_blank(),
+          text = element_text(size = 10),
+          axis.text.x = element_text(angle=30, vjust=1))
+
   dec <- dplyr::filter(siabox::decreto,
                        id_parametro == !!id_parametro & clase == "1")
 
@@ -787,6 +793,8 @@ g_est_dsv_all <- function(.data, id_parametro, t_eti, ...) {
     lista[[i]] <-
       g_est_dsv(.data, id_parametro = id_parametro[i], t_eti = t_eti)
   }
+  
+  if (i == 1) return(lista[[1]])
 
   out <- patchwork::wrap_plots(lista, ...) +
     patchwork::plot_annotation(tag_levels = 'A')
@@ -1045,7 +1053,7 @@ g_lon_pto <- function(.data,
   #   save(.data, id_parametro, anio, colores_meses, file = "tmp/g_lon_pto.RData")
 
   if (missing(anio)) anio <- max(.data$anio)
-  
+
   abr_meses <- c("Ene", "Feb", "Mar", "Abr", "May", "Jun",
                  "Jul", "Ago", "Set", "Oct", "Nov", "Dic")
 
@@ -1201,9 +1209,7 @@ g_lon_pto_files <- function(.data, anio, ventana_anios = 5L, tabla_horiz, path) 
 #' @param pbar logical. Define si se usa la capacidad de shiny de mostrar una
 #'   barra de progreso
 #' @inheritParams g_lon_pto_files
-#' @return
-#'
-#' @examples
+#' @return Directorio con los archivos creados.
 g_lon_pto_files_loop <- function(.data, anio, ventana_anios, tabla_horiz,
                                  directorio, pbar = FALSE) {
   id_par <- sort(unique(.data$id_parametro))

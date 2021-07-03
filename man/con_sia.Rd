@@ -7,7 +7,7 @@
 con_sia()
 }
 \value{
-
+Una conexión tipo DBI de PosgtgreSQL
 }
 \description{
 Genera una conexión con la base de datos infambiental, usando el usuario y

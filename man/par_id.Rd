@@ -25,14 +25,18 @@ ins_id(patron, ...)
 dep_id(patron, ...)
 }
 \arguments{
-\item{patron}{character. Patrón (expresión regular tipo
-\code{\link[base]{regex}}).}
+\item{patron}{character o numeric. Si es character, expresión regular tipo
+\code{\link[base]{regex}}. Si es numeric, el id_parametro de interés.}
 
 \item{...}{Argumentos pasados a \code{\link[base]{agrepl}} para buscar en las
 columnas \code{parametro} y \code{nombre_clave} de \code{\link{sia_parametro}}}
 }
 \value{
-
+Según la función, van a devolver parte relevante de la tabla original
+del SIA: \code{par_id} trae de \code{sia_parametro}, \code{pro_id} de
+\code{sia_programa}, \code{est_id} de \code{sia_estacion}, \code{mat_id} de
+\code{sia_matriz}, \code{uni_id} de \code{sia_unidad}, \code{ins_id} de
+\code{sia_institucion} y \code{dep_id} de \code{sia_departamento}.
 }
 \description{
 Buscadores de id para las varias tablas importadas del SIA, usando un texto
@@ -62,6 +66,9 @@ base al campo \code{dep_nombre} de dicha tabla.
 
 \examples{
 par_id("fósforo")
+par_id(2098)
+par_id(-2098)
+par_id(2098.98654)
 par_id("pt", max.distance = 0)
 pro_id("merin")
 est_id("pascual")

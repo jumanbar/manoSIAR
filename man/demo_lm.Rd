@@ -17,7 +17,9 @@ Genera un archivo Rmd con un ejemplo de informe para Laguna Merín
 Demostración de informe para Laguna Merín
 }
 \examples{
+\dontrun{
 demo_lm()
 demo_lm('pdf')
 demo_lm('doc')
+}
 }

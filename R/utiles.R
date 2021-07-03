@@ -15,9 +15,11 @@
 #' @export
 #'
 #' @examples
+#'\dontrun{
 #' demo_lm()
 #' demo_lm('pdf')
 #' demo_lm('doc')
+#' }
 demo_lm <- function(extension = c('html', 'pdf', 'doc')) {
   tipo <- match.arg(extension)
   demoname <- paste0('informe-laguna-merin-', tipo, '.Rmd')
@@ -109,9 +111,7 @@ colapsar_secuencia <- function(x, conector = "y", comillas = FALSE) {
 #' Genera una conexión con la base de datos infambiental, usando el usuario y
 #' clave de JMB. Sólo funciona en algunas PCs (ej.: servidor o PC de JMB).
 #'
-#' @return
-#'
-#' @examples
+#' @return Una conexión tipo DBI de PosgtgreSQL
 con_sia <- function() {
   # BASE DE DATOS SIA
   drv <- DBI::dbDriver("PostgreSQL")
@@ -193,8 +193,6 @@ parentesis <- function(v, ini = "(", fin = ")", comillas = FALSE) {
 #'
 #' @return data.frame con los mismos datos pero con columnas character
 #'   codificadas con UTF-8
-#'
-#' @examples
 set_utf8 <- function(x) {
   # cat("=== set_utf8:\n")
   # Declare UTF-8 encoding on all character columns:

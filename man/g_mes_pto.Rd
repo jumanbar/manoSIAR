@@ -29,7 +29,14 @@ d_est_bar(
   fun_desvio = stats::sd
 )
 
-g_est_dsv(.data, id_parametro, nombre_clave, ylab, t_eti)
+g_est_dsv(
+  .data,
+  id_parametro,
+  nombre_clave,
+  legend.position = "none",
+  ylab,
+  t_eti
+)
 
 g_est_dsv_all(.data, id_parametro, t_eti, ...)
 
@@ -136,6 +143,8 @@ e <- datos_sia \%>\%
                 id_parametro = p)
 g_est_dsv(e, nombre_clave = "PT")
 g_est_dsv_all(e, p)
+g_est_dsv(e, 2008)
+g_est_dsv_all(e, 2098)
 g_cue_box(e, p[1])
 }
 \seealso{

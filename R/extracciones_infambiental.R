@@ -60,20 +60,20 @@
 #'   posiblemente modificada con valores_numericos y con columnas agregadas por
 #'   \code{\link[dplyr]{left_join}}.
 #'
-#' @param unidades TRUE o FALSE. Determina si se agregan las unidades a las columnas de los parámetros (ej.: 'SatO (%)' en lugar de 'SatO')
+#' @param unidades TRUE o FALSE. Determina si se agregan las unidades a las
+#'   columnas de los parámetros (ej.: 'SatO (%)' en lugar de 'SatO')
 #'
-#' @details Espera que existan las columnas 'valor' y 'param'. En caso de no
-#'   encontrarlas las creará. La primera contiene los valores de los parámetros
+#' @details Espera que existan las columnas \code{valor} y \code{param}. En caso
+#'   de no encontrarlas las creará a partir de las columnas
+#'   \code{valor_minimo_str} y \code{nombre_clave}, respectivamente, si es que
+#'   están presentes. La primera contiene los valores de los parámetros
 #'   muestreados, ya sea en formato numérico o en texto. La segunda debería
-#'   contener el código del parámetro junto a las unidades de medida entre
-#'   paréntesis (ej.: \code{'OD (mg/L)'}). En caso de haber una columna llamada
-#'   'codigo_nuevo', será utilizada para crear 'param', de lo contrario usará la
-#'   columna 'nombre_clave' (de la tabla parametro, de infambientalbd).
+#'   contener el código del parámetro.
 #'
 #'   Para facilitar la compatibilidad, esta función además verifica la presencia
 #'   de otras columnas agregadas en el código de la app iSIA (en el reactive
-#'   \code{datos_extraccion}, del server.R): codigo_nuevo, parametro, grupo,
-#'   id_tipo_dato y tipo_dato.
+#'   \code{datos_extraccion}, del server.R): parametro, grupo, id_tipo_dato y
+#'   tipo_dato.
 #'
 #' @return
 #' @export
@@ -111,16 +111,16 @@ ancho <- function(.data, unidades = FALSE) {
             'valor = valor_minimo_str.')
     .data$valor <- .data$valor_minimo_str
   }
-  
-  if (!any(names(.data) == 'codigo_nuevo')) {
-    .data$codigo_nuevo <- .data$nombre_clave
-  }
 
   if (!any(names(.data) == 'param')) {
+    wnc <- which(names(.data) == 'nombre_clave')
+    if (!length(wnc))
+      stop('No se encontr\u00f3 columna con nombres de par\u00e1metros: ',
+           '"param" o "nombre_clave"')
     warning('Se cre\u00f3 autom\u00e1ticamente la columna "param".')
-    .data$param <- paste0(.data$codigo_nuevo, ' (', .data$uni_nombre, ')')
+    .data$param <- paste0(.data$nombre_clave, ' (', .data$uni_nombre, ')')
   }
-  
+
   # PERO QUÉ HAGO CON LAS OBSERVACIONES??
   #
   # Doy por sentado que está id_muestra? o que está observaciones?
@@ -146,8 +146,8 @@ ancho <- function(.data, unidades = FALSE) {
                   "cue_nombre", "id_cuenca", "sub_cue_nombre", "id_sub_cuenca",
                   "codigo_pto", "id_estacion", "tipo_punto_id",
                   "tip_pun_est_descripcion", "id_depto", "departamento",
-                  "id_institucion", "institucion", 
-                  # "usuario", # Eliminada en commit del 2/7/2021, porque 
+                  "id_institucion", "institucion",
+                  # "usuario", # Eliminada en commit del 2/7/2021, porque
                   # las muestras no tienen porqué tener a un único usuario
                   # para todos los parámetros.
                   "periodo", "anio",
@@ -197,7 +197,7 @@ ancho <- function(.data, unidades = FALSE) {
   #   .data <- .data[-w]
   # }
   w <- which(!(names(.data) %in% names(out)) &
-               !(names(.data) %in% c('param', 'valor', 
+               !(names(.data) %in% c('param', 'valor',
                                      'limite_deteccion',
                                      'limite_cuantificacion')))
   if (length(w)) {
@@ -869,18 +869,26 @@ unipar <- function(id_parametro, id_matriz = 6L, nombre_clave) {
 #' (un google de id_parametros). El texto o patrón puede ser una expresión
 #' regular (la cual será evaluada por \code{\link[base]{agrepl}}).
 #'
-#' @param patron character. Patrón (expresión regular tipo
-#'   \code{\link[base]{regex}}).
+#' @param patron character o numeric. Si es character, expresión regular tipo
+#'   \code{\link[base]{regex}}. Si es numeric, el id_parametro de interés.
 #' @param ... Argumentos pasados a \code{\link[base]{agrepl}} para buscar en las
 #'   columnas `parametro` y `nombre_clave` de \code{\link{sia_parametro}}
 #'
 #' @seealso \code{\link{sia_parametro}}
 #'
 #' @export
-#' @return
+#'
+#' @return Según la función, van a devolver parte relevante de la tabla original
+#'   del SIA: \code{par_id} trae de \code{sia_parametro}, \code{pro_id} de
+#'   \code{sia_programa}, \code{est_id} de \code{sia_estacion}, \code{mat_id} de
+#'   \code{sia_matriz}, \code{uni_id} de \code{sia_unidad}, \code{ins_id} de
+#'   \code{sia_institucion} y \code{dep_id} de \code{sia_departamento}.
 #'
 #' @examples
 #' par_id("fósforo")
+#' par_id(2098)
+#' par_id(-2098)
+#' par_id(2098.98654)
 #' par_id("pt", max.distance = 0)
 #' pro_id("merin")
 #' est_id("pascual")
@@ -895,6 +903,14 @@ unipar <- function(id_parametro, id_matriz = 6L, nombre_clave) {
 #' ins_id("cane")
 #' dep_id("flor")
 par_id <- function(patron, ...) {
+
+  if (is.numeric(patron)) {
+    pnum <- floor(abs(patron))
+    if (pnum != patron)
+      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
+              patron, ' a ', pnum)
+    return(dplyr::filter(sia_parametro, id_parametro == pnum))
+  }
 
   patron <- toascii(tolower(patron))
 
@@ -920,6 +936,15 @@ par_id <- function(patron, ...) {
 #'
 #' @export
 pro_id <- function(patron, ...) {
+
+  if (is.numeric(patron)) {
+    pnum <- floor(abs(patron))
+    if (pnum != patron)
+      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
+              patron, ' a ', pnum)
+    return(dplyr::filter(sia_programa, id_programa == pnum))
+  }
+
   dplyr::filter(siabox::sia_programa, agrepl(toascii(patron),
                                       toascii(nombre_programa),
                                       ignore.case = TRUE, ...))
@@ -931,6 +956,15 @@ pro_id <- function(patron, ...) {
 #'
 #' @export
 est_id <- function(patron, ...) {
+
+  if (is.numeric(patron)) {
+    pnum <- floor(abs(patron))
+    if (pnum != patron)
+      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
+              patron, ' a ', pnum)
+    return(dplyr::filter(sia_estacion, id == pnum))
+  }
+
   patron <- toascii(patron)
 
   resA <- agrepl(patron, toascii(siabox::sia_estacion$codigo_pto),
@@ -950,9 +984,17 @@ est_id <- function(patron, ...) {
 #'
 #' @export
 mat_id <- function(patron, ...) {
-  dplyr::filter(siabox::sia_matriz, agrepl(toascii(patron),
-                                  toascii(nombre),
-                                   ignore.case = TRUE, ...))
+  if (is.numeric(patron)) {
+    pnum <- floor(abs(patron))
+    if (pnum != patron)
+      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
+              patron, ' a ', pnum)
+    return(dplyr::filter(sia_matriz, id_matriz == pnum))
+  }
+  dplyr::filter(siabox::sia_matriz,
+                agrepl(toascii(patron),
+                       toascii(nombre),
+                       ignore.case = TRUE, ...))
 
 }
 
@@ -960,6 +1002,13 @@ mat_id <- function(patron, ...) {
 #'   campo `uni_nombre` de dicha tabla.
 #' @export
 uni_id <- function(patron, ...) {
+  if (is.numeric(patron)) {
+    pnum <- floor(abs(patron))
+    if (pnum != patron)
+      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
+              patron, ' a ', pnum)
+    return(dplyr::filter(sia_unidad, id == pnum))
+  }
   dplyr::filter(siabox::sia_unidad, agrepl(toascii(patron),
                                   toascii(uni_nombre),
                                    ignore.case = TRUE, ...))
@@ -970,9 +1019,17 @@ uni_id <- function(patron, ...) {
 #'   base al campo `nombre` de dicha tabla.
 #' @export
 ins_id <- function(patron, ...) {
-  dplyr::filter(siabox::sia_institucion, agrepl(toascii(patron),
-                                toascii(nombre),
-                                 ignore.case = TRUE, ...))
+  if (is.numeric(patron)) {
+    pnum <- floor(abs(patron))
+    if (pnum != patron)
+      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
+              patron, ' a ', pnum)
+    return(dplyr::filter(sia_institucion, id_institucion == pnum))
+  }
+  dplyr::filter(siabox::sia_institucion,
+                agrepl(toascii(patron),
+                       toascii(nombre),
+                       ignore.case = TRUE, ...))
 
 }
 
@@ -980,9 +1037,17 @@ ins_id <- function(patron, ...) {
 #'   base al campo `dep_nombre` de dicha tabla.
 #' @export
 dep_id <- function(patron, ...) {
-  dplyr::filter(siabox::sia_departamento, agrepl(toascii(patron),
-                                        toascii(dep_nombre),
-                                         ignore.case = TRUE, ...))
+  if (is.numeric(patron)) {
+    pnum <- floor(abs(patron))
+    if (pnum != patron)
+      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
+              patron, ' a ', pnum)
+    return(dplyr::filter(sia_departamento, id == pnum))
+  }
+  dplyr::filter(siabox::sia_departamento,
+                agrepl(toascii(patron),
+                       toascii(dep_nombre),
+                       ignore.case = TRUE, ...))
 
 }
 

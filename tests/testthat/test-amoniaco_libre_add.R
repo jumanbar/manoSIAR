@@ -1,3 +1,5 @@
+# Agregar: antes y después tienen mismas columnas! (y cantidad, obviamente)
+
 # [A] sin NH3L -----
 # 
 # Procesa muestras con datos únicamente de los parámetros Tem, pH y NH4; se 
@@ -23,6 +25,12 @@ test_that("[A] nrow.in %% 3 == 0", {
 # nrow(pnt) %% 3 == 0 # test
 
 pnt.p <- amoniaco_libre_add(pnt)
+
+# La salida debería tener misma cant de columnas que entrada
+test_that("[A] ncol.out == ncol.in", {
+  testthat::expect_identical(ncol(pnt.p), ncol(pnt))
+})
+
 
 # nrow(pnt.p) %% 4 == 0 # test
 

@@ -32,7 +32,7 @@ imágenes}
 barra de progreso}
 }
 \value{
-
+Directorio con los archivos creados.
 }
 \description{
 Helper para \code{\link{g_lon_pto_files}}

@@ -11,7 +11,8 @@ ancho(.data, unidades = FALSE)
 posiblemente modificada con valores_numericos y con columnas agregadas por
 \code{\link[dplyr]{left_join}}.}
 
-\item{unidades}{TRUE o FALSE. Determina si se agregan las unidades a las columnas de los parámetros (ej.: 'SatO (\%)' en lugar de 'SatO')}
+\item{unidades}{TRUE o FALSE. Determina si se agregan las unidades a las
+columnas de los parámetros (ej.: 'SatO (\%)' en lugar de 'SatO')}
 }
 \value{
 
@@ -21,18 +22,17 @@ Ensanchar datos provenientes de consulta_muestras. Espera la presencia de
 ciertas columnas y una sóla matriz ambiental. Ver detalles.
 }
 \details{
-Espera que existan las columnas 'valor' y 'param'. En caso de no
-encontrarlas las creará. La primera contiene los valores de los parámetros
+Espera que existan las columnas \code{valor} y \code{param}. En caso
+de no encontrarlas las creará a partir de las columnas
+\code{valor_minimo_str} y \code{nombre_clave}, respectivamente, si es que
+están presentes. La primera contiene los valores de los parámetros
 muestreados, ya sea en formato numérico o en texto. La segunda debería
-contener el código del parámetro junto a las unidades de medida entre
-paréntesis (ej.: \code{'OD (mg/L)'}). En caso de haber una columna llamada
-'codigo_nuevo', será utilizada para crear 'param', de lo contrario usará la
-columna 'nombre_clave' (de la tabla parametro, de infambientalbd).
+contener el código del parámetro.
 
 Para facilitar la compatibilidad, esta función además verifica la presencia
 de otras columnas agregadas en el código de la app iSIA (en el reactive
-\code{datos_extraccion}, del server.R): codigo_nuevo, parametro, grupo,
-id_tipo_dato y tipo_dato.
+\code{datos_extraccion}, del server.R): parametro, grupo, id_tipo_dato y
+tipo_dato.
 }
 \examples{
 d <- filtrar_datos(datos_sia,

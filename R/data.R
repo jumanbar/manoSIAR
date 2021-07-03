@@ -4,9 +4,9 @@
 
 #' Lista de cuencas
 #'
-#' La tabla de cuencas tiene `r nrow(sia_cuenca)` cuencas definidas, incluyendo 
+#' La tabla de cuencas tiene `r nrow(sia_cuenca)` cuencas definidas, incluyendo
 #' categorías extra (Falta Cuenca y Dato Migrado).
-#' 
+#'
 #' Fecha de extraccion: 2020-10-22
 #'
 #' @format Tabla con `r nrow(sia_cuenca)` filas y
@@ -19,8 +19,8 @@
 #'   \item{cue_nombre}{character. Nombre de la cuenca}
 #'
 #'   }
-#'   
-#' @examples 
+#'
+#' @examples
 #' dplyr::left_join(dplyr::select(sia_sub_cuenca, id:sub_cue_cuenca_id),
 #'                  sia_cuenca, by = c('sub_cue_cuenca_id' = 'id'))
 #'
@@ -410,14 +410,14 @@
 
 #' Lista de subcuencas
 #'
-#' La tabla de subcuencas tiene `r nrow(sia_sub_cuenca)` cuencas definidas, 
-#' asociadas a las cuencas de \code{\link{sia_cuenca}} a través de la columna 
+#' La tabla de subcuencas tiene `r nrow(sia_sub_cuenca)` cuencas definidas,
+#' asociadas a las cuencas de \code{\link{sia_cuenca}} a través de la columna
 #' \code{sub_cue_cuenca_id}.
-#' 
-#' Las columnas \code{sub_cue_curso}, \code{sub_cue_cod_sc} y 
-#' \code{cursos_de_agua} refieren a otras tablas de \code{infambientalbd} no 
+#'
+#' Las columnas \code{sub_cue_curso}, \code{sub_cue_cod_sc} y
+#' \code{cursos_de_agua} refieren a otras tablas de \code{infambientalbd} no
 #' incluidas en el presente paquete.
-#' 
+#'
 #' Fecha de extraccion: 2020-10-22
 #'
 #' @format Tabla con `r nrow(sia_sub_cuenca)` filas y
@@ -428,22 +428,22 @@
 #'   \item{id}{integer. Número asignado a la subcuenca}
 #'
 #'   \item{sub_cue_nombre}{Nombre de la subcuenca}
-#'   
+#'
 #'   \item{sub_cue_cuenca_id}{integer. Id de la cuenca asociada, correspondiente
 #'     a la tabla \code{\link{sia_cuenca}}}
-#'   
-#'   \item{sub_cue_curso}{Columna asociada a otras tablas de 
+#'
+#'   \item{sub_cue_curso}{Columna asociada a otras tablas de
 #'     \code{ifnambientalbd}}
-#'   
-#'   \item{sub_cue_cod_sc}{Columna asociada a otras tablas de 
+#'
+#'   \item{sub_cue_cod_sc}{Columna asociada a otras tablas de
 #'     \code{ifnambientalbd}}
-#'   
-#'   \item{cursos_de_agua}{Columna asociada a otras tablas de 
+#'
+#'   \item{cursos_de_agua}{Columna asociada a otras tablas de
 #'     \code{ifnambientalbd}}
 #'
 #'   }
 #'
-#' @examples 
+#' @examples
 #' dplyr::left_join(dplyr::select(sia_sub_cuenca, id:sub_cue_cuenca_id),
 #'                  sia_cuenca, by = c('sub_cue_cuenca_id' = 'id'))
 #'
@@ -606,8 +606,8 @@
 #'
 #'   \item{nombre_subcuenca_informes}{Nombre dado a cada subcuenca dentro de los
 #'   informes anuales de los programas de monitoreo.}
-#'   
-#'   \ite{codigo_pto_mnod}{Nombre de la estación modificado, siguiendo los 
+#'
+#'   \item{codigo_pto_mnod}{Nombre de la estación modificado, siguiendo los 
 #'   códigos presentes en la tabla \code{\link{cuencas_informes}}}
 #'
 #'   \item{grupo}{Grupo al que pertenece el parámetro (ej.: Parámetros de
@@ -819,7 +819,7 @@
 #'
 #' @seealso \code{\link{sia_estacion}}
 #'
-#' @format Tabla con `r nrow(cuencas_informes)` filas y 
+#' @format Tabla con `r nrow(cuencas_informes)` filas y
 #'   `r ncol(cuencas_informes)` columnas:
 #'
 #'   \describe{
@@ -849,7 +849,7 @@
 #'   \code{\link{sia_programa}}}
 #'
 #'   }
-#'   
+#'
 "cuencas_informes"
 
 
