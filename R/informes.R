@@ -138,6 +138,18 @@ amoniaco_libre <- function(NH4, pH, Temp) {
 #'
 #' @export
 amoniaco_libre_add <- function(.data) {
+  
+  # Para pruebas: datos sin suficientes parámetros:
+  # 
+  # 3294561 ph y temp
+  # 3294191 NH4 y temp
+  # 
+  # Para mensaje de error (parámetros ausentes):
+  # .data <- dplyr::filter(datos_sia, id_muestra == 3294561)
+  # 
+  # Para mensaje de advertencia (sin parámetros suficiente para al menos una
+  # muestra), pero sin generar mensaje de error anterior:
+  # .data <- dplyr::filter(datos_sia, id_muestra %in% c(3294191, 3294561))
 
   # Parámetros necesarios:
   parnec <- c(2032L, 2018L, 2090L)
@@ -146,44 +158,86 @@ amoniaco_libre_add <- function(.data) {
     stop("Par\u00e1metro(s) ausente(s). Se necesitan los id_parametros: ",
          colapsar_secuencia(parnec), " (Temperatura, pH y NH4)")
 
+  w0 <- which(.data$id_parametro %in% parnec)
+  # w1 <- which(!(.data$id_parametro %in% parnec))
+  w2 <- which(.data$id_parametro == 2091L)
+  nh3 <- .data[w2,]
+  
+  # Armar una tabla tipo ancho, evitando el warning por defecto que tira esa
+  # función:
+  tmp <- suppressWarnings({
+      # 1. Tomar Temperatura, pH y NAmoniacal y convertir la tabla a formato ancho:
+      .data[w0,] %>% 
+      dplyr::mutate(param = dplyr::case_when(
+        # Cambiar los nombres de los parámetros facilita escribir el código más
+        # abajo:
+        id_parametro == 2032L ~ "Tem",
+        id_parametro == 2018L ~ "pH",
+        TRUE ~ "NH4"
+      )) %>%
+      ancho 
+  })
+  
+  # Cuando ninguna muestra presente tiene los 3 parámetros necesarios (aún si
+  # en el total de .data están todos):
+  nas <- with(tmp, is.na(Tem) | is.na(pH) | is.na(NH4))
+  if (all(nas)) {
+    warning('No se encontraron muestras con datos v\u00e1lidos para los tres ',
+            'par\u00e1metros necesarios simult\u00e1neamente: Tem, pH y NH4',
+            '\n--> Se devuelven los datos tal como se ingresaron')
+    return(.data)
+  }  
+  
+  u <- unipar(2091)
+  
   # Para agregar el parámetro NH3L, a la tabla que está en formato "largo", hace
-  # falta hacer algunos trucos:
-  tmp <-
-    # 1. Tomar Temperatura, pH y NAmoniacal y convertir la tabla a formato ancho:
-    .data %>%
-    dplyr::filter(id_parametro %in% parnec) %>%
-    dplyr::mutate(param = dplyr::case_when(
-      # Cambiar los nombres de los parámetros facilita escribir el código más
-      # abajo:
-      id_parametro == 2032L ~ "Tem",
-      id_parametro == 2018L ~ "pH",
-      TRUE ~ "NH4"
-    )) %>%
-    ancho %>%
+  # falta hacer algunos trucos, que aparecen en el paso '2':
+  tmp <- tmp %>%
     # 2. Calcular NH3L (observar los nombres cambiados de los parámetros):
     dplyr::mutate(
-      valor = amoniaco_libre(NH4, pH, Tem),
+      valor_nuevo = amoniaco_libre(NH4, pH, Tem),
       # Usar el nombre "valor" facilita el siguiente paso (bind_rows).
       # Compatibilizar tmp con d (necesario para el bind_rows), implica agregar
       # las columnas que se eliminan al usar la función ancho:
       id_parametro = 2091L,
-      parametro = "Amoniaco libre",
+      id_unidad = u$id_unidad,
+      uni_nombre = u$uni_nombre,
+      parametro = u$parametro,
       param = "NH3L",
-      id_tipo_dato = 7L,
-      tipo_dato = "OTRO",
+      # id_tipo_dato = 1L,
+      # tipo_dato = "OTRO",
       grupo = "Par\u00e1metros Inorg\u00e1nicos no Met\u00e1licos",
-      codigo_nuevo = "NH3L",
-      nombre_clave = 'NH3'
+      # codigo_nuevo = "NH3L",
+      nombre_clave = u$nombre_clave
     ) %>%
     # 3. Eliminar las columnas de pH, Temperatura y NH4:
     dplyr::select(-tidyselect::starts_with("pH"),
                   -tidyselect::starts_with("Tem"),
                   -tidyselect::starts_with("NH4"))
 
-  # Combinar .data y tmp:
-  out <-
-    dplyr::bind_rows(.data, tmp) %>%
-    dplyr::arrange(id_muestra, id_parametro)
+  jcols <- names(.data)[names(.data) %in% names(tmp)]
+  out <- dplyr::full_join(.data, tmp, by = jcols) %>% 
+    dplyr::mutate(valor = dplyr::if_else(is.na(valor_nuevo), 
+                                         valor, valor_nuevo)) %>% 
+    dplyr::select(-valor_nuevo)
+  
+  w <- which(is.na(out$id_tipo_dato))
+  if (length(w))
+    out$id_tipo_dato[w] <- 1L
+  
+  if (nrow(nh3)) {
+    # Si se hicieron sustituciones a valores originales de NH3L, se avisa con un
+    # warning
+    dife <- nh3$valor - round(out[w2,]$valor, 3)
+    dife.p <- abs(nh3$valor - round(out[w2,]$valor, 3)) / nh3$valor
+    cant.dife <- sum(dife != 0)
+    if (cant.dife) {
+      warning('Se sustituyeron ', cant.dife, ' valores originales de NH3L, ',
+              'con una diferencia promedio de ',
+              round(mean(dife, na.rm = TRUE), 3), ' ug/L', 
+              ' (', 100 * round(mean(dife.p), 3), '%)')
+    }
+  }
   return(out)
 }
 

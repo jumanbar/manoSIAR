@@ -146,7 +146,11 @@ ancho <- function(.data, unidades = FALSE) {
                   "cue_nombre", "id_cuenca", "sub_cue_nombre", "id_sub_cuenca",
                   "codigo_pto", "id_estacion", "tipo_punto_id",
                   "tip_pun_est_descripcion", "id_depto", "departamento",
-                  "id_institucion", "institucion", "usuario", "periodo", "anio",
+                  "id_institucion", "institucion", 
+                  # "usuario", # Eliminada en commit del 2/7/2021, porque 
+                  # las muestras no tienen porqué tener a un único usuario
+                  # para todos los parámetros.
+                  "periodo", "anio",
                   "mes", "anio_mes", "fecha_muestra", "fecha_hora",
                   "observaciones", "id_matriz", "nombre_subcuenca_informes",
                   "codigo_pto_mod", "param", "LD", "LC", "valor"
