@@ -1,3 +1,17 @@
+# 2021-07-03
+
+- Funciones `[...]_id`: ahora, si el `patron` (primer argumento) es un valor numérico, devuelve la entrada de la tabla correspondiente con el `id == patron`, si es que hay alguna. Ejemplo: `par_id(2098)` devuelve la entrada de fósforo total de la tabla `sia_parametro`.
+
+- g_mes_pto_all: ahora no da error si se pide una sóla gráfica para un parámetro sin datos
+
+- g_est_dsv: Ahora cuando no hay datos da una gráfica vacía indicando eso
+
+- g_est_dsv_all: ídem
+
+- Cambios en `ancho`: detalles que evitan algunos problemas infrecuentes.
+
+- Mejoras de varios detalles de documentación de funciones.
+
 # 2021-07-02
 
 ## `ancho`
