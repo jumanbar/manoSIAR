@@ -1,5 +1,9 @@
 # 2021-07-03
 
+La función `g_tie_lin` fue creada para graficar series de tiempo de 1 a 5 parámetros.
+
+# 2021-07-03
+
 - Funciones `[...]_id`: ahora, si el `patron` (primer argumento) es un valor numérico, devuelve la entrada de la tabla correspondiente con el `id == patron`, si es que hay alguna. Ejemplos:
 
 ```r
