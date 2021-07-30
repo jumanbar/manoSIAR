@@ -2,7 +2,7 @@
 #
 # Funciones extras que pueden ser útiles pero no son fundamentales. En
 # principio, mi idea es no exportarlas con el resto del paquete.
-# 
+#
 # La única excepción es la función demo_lm
 
 #' Demostración de informe para Laguna Merín
@@ -11,7 +11,7 @@
 #'   pdf o doc.
 #'
 #' @return Genera un archivo Rmd con un ejemplo de informe para Laguna Merín
-#' 
+#'
 #' @export
 #'
 #' @examples
@@ -87,8 +87,9 @@ det_nonum <- function(v) {
 #'
 #' @examples
 #' cat("Numeros:", siabox:::colapsar_secuencia(4:8), "\n")
+#' cat("Numeros:", siabox:::colapsar_secuencia(4:8, ", "), "\n")
 #' cat("Numeros:", siabox:::colapsar_secuencia(4:8, comillas = TRUE), "\n")
-colapsar_secuencia <- function(x, conector = "y", comillas = FALSE) {
+colapsar_secuencia <- function(x, conector = " y ", comillas = FALSE) {
   z <- ifelse(comillas, "'", "")
   if (length(x) == 0) {
     out <- ""
@@ -99,7 +100,7 @@ colapsar_secuencia <- function(x, conector = "y", comillas = FALSE) {
     out <- paste0(
       z,
       paste0(x[-l], collapse = paste0(z, ", ", z)),
-      paste0(z, " ", conector, " ", z, x[l], z)
+      paste0(z, conector, z, x[l], z)
     )
   }
   return(out)
