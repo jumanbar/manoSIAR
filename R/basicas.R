@@ -900,7 +900,6 @@ largo.default <- function(.data) {
   # Presupone que .data es una tabla creada con un comando tipo
   # siabox::ancho(x), en donde x tiene el mismo set de columnas que
   # siabox::datos_sia
-  require(magrittr)
   d <- dplyr::mutate(.data, nfila = dplyr::row_number())
   s <- c(names(siabox::datos_sia), "nfila")
   s <- s[!(s %in% c(
@@ -987,7 +986,6 @@ largo.default <- function(.data) {
 #' largo(lista_lab$datos)
 #' largo(lista_lab$datos, lista_lab$columnas$tabla_columnas)
 largo.planilla <- function(.data, tcols = NULL) {
-  require(magrittr)
   datadim <- dim(.data)
   d <- dplyr::mutate(.data, nfila = 1:datadim[1])
   nc <- 1:ncol(d)
