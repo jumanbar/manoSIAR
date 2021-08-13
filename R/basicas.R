@@ -41,15 +41,17 @@
 # en esta pregunta de StackOverflow:
 # https://es.stackoverflow.com/questions/357580/c%C3%B3mo-puedo-convertir-columnas-a-filas-y-filas-a-columnas-en-r-es-decir-conver.
 #
-# En todo momento las funciones *_id están para ayudar: permiten encontrar el
-# número que identifica parámetros, unidades, programas, etc., usando una
-# búsqueda de texto aproximada (ej: `par_id("fosfo")`).
+# En todo momento las funciones *_id (archivo "helpers.R") están para ayudar:
+# permiten encontrar el número que identifica parámetros, unidades, programas,
+# etc., usando una búsqueda de texto aproximada (ej: `par_id("fosfo")`).
 #
 # De manera similar, la función unipar sirve para buscar rápidamente las
 # unidades de medida oficiales para un parámetro (y matriz) dado, usando id o
 # nombre clave.
 
 # . . . . . . . . .  . . . . .  .  . . . . . . . . -----
+#
+# MANIPULAR DATOS -----
 
 #' Formato ancho
 #'
@@ -839,230 +841,241 @@ filtrar_datos <- function(.data,
   return(out)
 }
 
-#' Ver unidades de un parámetro SIA
+#' Pasar a formato ancho
 #'
-#' @param id_parametro integer. id del parámetro (ver
-#'   \code{\link{sia_parametro}})
-#' @param id_matriz integer. id de la matriz (ver \code{\link{sia_matriz}})
-#' @param nombre_clave character. Código o nombre clave del parámetro (ver
-#'   \code{\link{sia_parametro}})
+#' Los valores vienen en character cuando se importan tablas de campo o
+#' laboratorio (clase "planilla"), en el contexto de la app vSIA, y son
+#' equivalentes a la columna valor_minimo_str de los datos provenientes del SIA.
+#' De hecho, los valores así como están (a menos que tengan errores y sean
+#' modificados por un usuarie antes de ser ingresados), van directo a esa misma
+#' columna de la tabla datos_muestra_parametros de infambientalbd.
 #'
-#' @return
+#' En cambio, cuando se trata de datos de origen "sia", se asume que están en el
+#' formato de \code{\link[siabox]{datos_sia}} (previamente transformados con la
+#' función \code{\link[siabox]{ancho}}), de forma que se espera que los valores
+#' sean numéricos.
+#'
+#' @param .data data.frame. Tabla de datos, con formatos específicos según su
+#'   clase.
+#'
+#' @return Devuelve los mismos datos pero en formato largo: los nombres del
+#'   parámetro van en una columna y en otras columnas: valor, LD y LC. Esto
+#'   puede variar según los distintos métodos.
 #' @export
 #'
-#' @seealso \code{\link{sia_parametro}}
+#' @examples
+largo <- function(.data, ...) {
+  UseMethod("largo")
+}
+
+#' Formato ancho
+#'
+#' Pensada para ser la contraparte de \code{link[siabox]{ancho}}.
+#'
+#' @param .data data.frame. Formato similar al creado con
+#'   \code{link[siabox]{ancho}} a partir de \code{link[siabox]{datos_sia}} o
+#'   afines
+#'
+#' @return data.frame en formato largo.
+#' @export
 #'
 #' @examples
-#' unipar(c(2098, 2005))
-#' unipar(nombre_clave = "^PT$")
-#' unipar(nombre_clave = "Colif")
-unipar <- function(id_parametro, id_matriz = 6L, nombre_clave) {
-  if (missing(id_parametro)) {
-    id_parametro <-
-      siabox::sia_parametro %>%
-      dplyr::filter(grepl(!!nombre_clave, nombre_clave, ignore.case = TRUE)) %>%
-      dplyr::pull(id_parametro)
-  }
-  out <-
-    siabox::sia_parametro %>%
-    dplyr::select(id_parametro, parametro, nombre_clave) %>%
-    dplyr::filter(id_parametro %in% !!id_parametro) %>%
-    dplyr::left_join(siabox::sia_param_unidad, by = "id_parametro") %>%
-    dplyr::filter(id_matriz %in% !!id_matriz) %>%
-    dplyr::left_join(siabox::sia_unidad, by = c("id_unidad_medida" = "id")) %>%
-    dplyr::select(id_parametro, parametro, nombre_clave, id_matriz,
-                  id_unidad = id_unidad_medida, uni_nombre)
+#' d <- filtrar_datos(datos_sia,
+#'                    id_programa = 10L,
+#'                    rango_fechas = c("2019-01-01", "2020-12-31"),
+#'                    id_parametro = c(2099, 2098)) %>%
+#'   dplyr::select(codigo_pto, fecha_muestra, id_parametro, param, id_unidad,
+#'                 uni_nombre, limite_deteccion, limite_cuantificacion, valor)
+#' da <- ancho(d)
+#' (dal <- largo(da))
+#'
+#' dim(d)
+#' dim(dal)
+#'
+#' datos_sia %>%
+#'   dplyr::filter(id_programa == 4, id_parametro %in% c(2017, 2021)) %>%
+#'   ancho %>%
+#'   largo
+largo.default <- function(.data) {
+  # Presupone que .data es una tabla creada con un comando tipo
+  # siabox::ancho(x), en donde x tiene el mismo set de columnas que
+  # siabox::datos_sia
+  require(magrittr)
+  d <- dplyr::mutate(.data, nfila = dplyr::row_number())
+  s <- c(names(siabox::datos_sia), "nfila")
+  s <- s[!(s %in% c(
+    "valor", "usuario", "id_parametro", "parametro", "nombre_clave",
+    "id_unidad", "uni_nombre", "valor_minimo_str", "id_tipo_dato", "grupo",
+    "limite_deteccion", "limite_cuantificacion", "param"))]
+
+  ld_cols <- grep("[\\s+_]LD", names(d), ignore.case = TRUE)
+  lc_cols <- grep("[\\s+_]LC", names(d), ignore.case = TRUE)
+
+  no_lim_cols <- !grepl("[\\s+_]L[CD]", names(d), ignore.case = TRUE)
+
+  largo_val <- d[no_lim_cols] %>%
+    tidyr::pivot_longer(-tidyselect::all_of(s),
+                        names_to = "param",
+                        values_to = "valor")
+
+  largo_ld <-
+    # ncol(d) = nfila
+    d[c(ncol(d), ld_cols)] %>%
+    tidyr::pivot_longer(-1L,
+                        names_to = "param",
+                        values_to = "limite_deteccion",
+                        names_pattern = "(.*)_[Ll][Dd]$")
+
+  largo_lc <-
+    # ncol(d) = nfila
+    d[c(ncol(d), lc_cols)] %>%
+    tidyr::pivot_longer(-1L,
+                        names_to = "param",
+                        values_to = "limite_cuantificacion",
+                        names_pattern = "(.*)_[Ll][Cc]$")
+
+  out <- largo_val %>%
+    dplyr::left_join(largo_ld, by = c("nfila", "param")) %>%
+    dplyr::left_join(largo_lc, by = c("nfila", "param"))
+
+  out <- dplyr::filter(out, !(is.na(valor) &
+                                is.na(limite_deteccion) &
+                                is.na(limite_cuantificacion)))
+
   return(out)
 }
 
-#' Buscadores de id
+#' Planilla a formato largo
 #'
-#' Buscadores de id para las varias tablas importadas del SIA, usando un texto
-#' (un google de id_parametros). El texto o patrón puede ser una expresión
-#' regular (la cual será evaluada por \code{\link[base]{agrepl}}).
+#' Planilla refiere a planilla con formato SILAD o al template para datos de
+#' campo del vSIA.
 #'
-#' @param patron character o numeric. Si es character, expresión regular tipo
-#'   \code{\link[base]{regex}}. Si es numeric, el id_parametro de interés.
-#' @param ... Argumentos pasados a \code{\link[base]{agrepl}} para buscar en las
-#'   columnas `parametro` y `nombre_clave` de \code{\link{sia_parametro}}
+#' Asume que siempre que hay LD también hay valores de LC.
 #'
-#' @seealso \code{\link{sia_parametro}}
+#' Importante: si `tcols` es `NULL`, se asume que las columnas parametro, LD y
+#' LC, vienen siempre en ese orden y que todos los parámetros tienen nombres
+#' únicos que los distinguen (cosa que tengo patente que no es necesariamente
+#' cierto). O sea que si están los parámetros AlcT y STF, entonces las columnas
+#' estarán en el orden: AlcT (mg CaCO3/L), AlcT LD, AlcT LC, STF (mg/L), STF LD,
+#' STF LC (aunque sí podrían estar todas las columnas STF antes que las de AlcT;
+#' lo que importa es que siempre venga LC luego de LD y este luego del parámetro
+#' en sí.).
+#'
+#' @param .data data.frame con los datos en formato ancho (planilla SILAD o
+#'   template de campo de vSIA)
+#' @param tcols data.frame opcional: la tabla de columnas creada durante el
+#'   proceso de vSIA.
+#'
+#' @return Devuelve los mismos datos pero en formato largo, con la columna
+#'   `nfila` agregada, valores (character) en la columna `valor_minimo_str`
+#'   (nombre usado para que coincida con `datos_muestras_parametros` de
+#'   infambietnalbd). El parámetro se indica en la columna `nombre_clave`,
+#'   cuando `tcols` es null, o `id_parametro`, en caso contrario.
+#'
+#'   Debe tenerse en cuenta que se eliminan las entradas sin valores (i.e.:
+#'   `NA`). En caso de que en los datos incluyan LD o LC, las entradas elminadas
+#'   son aquellas que no tengan valores en `valor_minimo_str`, ni en
+#'   `limite_deteccion`, ni en `limite_cuantificacion`
 #'
 #' @export
-#'
-#' @return Según la función, van a devolver parte relevante de la tabla original
-#'   del SIA: \code{par_id} trae de \code{sia_parametro}, \code{pro_id} de
-#'   \code{sia_programa}, \code{est_id} de \code{sia_estacion}, \code{mat_id} de
-#'   \code{sia_matriz}, \code{uni_id} de \code{sia_unidad}, \code{ins_id} de
-#'   \code{sia_institucion} y \code{dep_id} de \code{sia_departamento}.
 #'
 #' @examples
-#' par_id("fósforo")
-#' par_id(2098)
-#' par_id(-2098)
-#' par_id(2098.98654)
-#' par_id("pt", max.distance = 0)
-#' pro_id("merin")
-#' est_id("pascual")
-#' dep_id("cane")
-#' est_id("pascual")
-#' est_id("pascal")
-#' est_id("pscal")
-#' est_id("pacl")
-#' mat_id("agua")
-#' uni_id("mg/l")
-#' uni_id("mg/l", max.distance = 0)
-#' ins_id("cane")
-#' dep_id("flor")
-par_id <- function(patron, ...) {
+#' lista_campo <- readRDS("tmp/campo.rds")
+#' largo(lista_campo$datos)
+#' largo(lista_campo$datos, lista_campo$columnas)
+#' lista_lab <- readRDS("tmp/lab.rds")
+#' largo(lista_lab$datos)
+#' largo(lista_lab$datos, lista_lab$columnas$tabla_columnas)
+largo.planilla <- function(.data, tcols = NULL) {
+  require(magrittr)
+  datadim <- dim(.data)
+  d <- dplyr::mutate(.data, nfila = 1:datadim[1])
+  nc <- 1:ncol(d)
 
-  if (is.numeric(patron)) {
-    pnum <- floor(abs(patron))
-    if (pnum != patron)
-      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
-              patron, ' a ', pnum)
-    return(dplyr::filter(sia_parametro, id_parametro == pnum))
+  if (is.null(tcols)) {
+    nombres_a <- "nombre_clave"
+    patron_ld = "(.*)[[:space:]_]LD"
+    patron_lc = "(.*)[[:space:]_]LC"
+
+    # meta
+    metacols <- c("campana", "estacion", "fecha", "fecha muestra", "hora",
+                  "nro. muestra", "observaciones","parametro", "parametro:",
+                  "replica", "nfila")
+    met_l <- tolower(toascii(names(d))) %in% metacols
+    ld_l  <- grepl("[[:space:]_]LD$", names(d), ignore.case = TRUE)
+    lc_l  <- grepl("[[:space:]_]LC$", names(d), ignore.case = TRUE)
+    par_l <- !met_l & !ld_l & !lc_l
+    s <- names(d)[met_l]
+    met_i <- nc[met_l]
+    par_i <- nc[par_l]
+
+    ld_i <- nc[ld_l]
+    lc_i <- nc[lc_l]
+
+    if (sum(ld_l)) {
+      parnames <- gsub("(.*)[[:space:]_]LD", "\\1", names(d)[ld_l])
+      names(d)[par_l] <- parnames
+    }
+  } else {
+    nombres_a <- "id_parametro"
+    patron_ld <- "([0-9]+)_LD"
+    patron_lc <- "([0-9]+)_LC"
+    par_l <- !is.na(tcols$id_parametro) & tcols$Tipo == "Valor"
+    ld_l  <- !is.na(tcols$id_parametro) & tcols$Tipo == "LD"
+    lc_l  <- !is.na(tcols$id_parametro) & tcols$Tipo == "LC"
+    ld_i  <- tcols$ncol[ld_l]
+    lc_i  <- tcols$ncol[lc_l]
+
+    met_i <- c(tcols$ncol[is.na(tcols$id_parametro)], ncol(d))
+    par_i <- tcols$ncol[par_l]
+
+    s <- names(d)[met_i]
+    names(d)[par_i]  <- tcols$id_parametro[par_l]
+    names(d)[ld_i]   <- paste0(tcols$id_parametro[ld_l], "_LD")
+    names(d)[lc_i]   <- paste0(tcols$id_parametro[lc_l], "_LC")
   }
 
-  patron <- toascii(tolower(patron))
+  largo_val <- d[c(met_i, par_i)] %>%
+    tidyr::pivot_longer(-tidyselect::all_of(s),
+                        names_to = nombres_a,
+                        values_to = "valor_minimo_str")
 
-  w <- which(toascii(tolower(siabox::sia_parametro$nombre_clave)) == patron)
-  if (length(w)) return(siabox::sia_parametro[w,])
+  if (nombres_a == "id_parametro")
+    largo_val$id_parametro <- as.integer(largo_val$id_parametro)
 
-  w <- which(toascii(tolower(siabox::sia_parametro$parametro)) == patron)
-  if (length(w)) return(siabox::sia_parametro[w,])
+  if (sum(ld_l) && sum(lc_l)) {
 
-  resA <- agrepl(patron, toascii(siabox::sia_parametro$nombre_clave),
-                 ignore.case = TRUE,
-                 ...)
+    largo_ld <- d[c(ncol(d), ld_i)] %>%
+      tidyr::pivot_longer(-1L,
+                          names_to = nombres_a,
+                          values_to = "limite_deteccion",
+                          names_pattern = patron_ld)
 
-  resB <- agrepl(patron, toascii(siabox::sia_parametro$parametro),
-                 ignore.case = TRUE,
-                 ...)
+    largo_lc <- d[c(ncol(d), lc_i)] %>%
+      tidyr::pivot_longer(-1L,
+                          names_to = nombres_a,
+                          values_to = "limite_cuantificacion",
+                          names_pattern = patron_lc)
 
-  siabox::sia_parametro[resA | resB,]
-}
+    if (nombres_a == "id_parametro") {
+      largo_ld$id_parametro <- as.integer(largo_ld$id_parametro)
+      largo_lc$id_parametro <- as.integer(largo_lc$id_parametro)
+    }
 
-#' @describeIn par_id Busca programas en \code{\link{sia_programa}} en base al
-#'   campo `nombre_programa` de dicha tabla.
-#'
-#' @export
-pro_id <- function(patron, ...) {
+    out <- largo_val %>%
+      dplyr::left_join(largo_ld, by = c("nfila", nombres_a)) %>%
+      dplyr::left_join(largo_lc, by = c("nfila", nombres_a))
 
-  if (is.numeric(patron)) {
-    pnum <- floor(abs(patron))
-    if (pnum != patron)
-      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
-              patron, ' a ', pnum)
-    return(dplyr::filter(sia_programa, id_programa == pnum))
+    # El siguiente código tiene sentido si el formato largo se usa
+    # exclusivamente para analizar los valores numéricos + LD y LC:
+    out <- dplyr::filter(out, !(is.na(valor_minimo_str) &
+                                  is.na(limite_deteccion) &
+                                  is.na(limite_cuantificacion)))
+  } else  {
+    out <- dplyr::filter(largo_val, !is.na(valor_minimo_str))
   }
-
-  dplyr::filter(siabox::sia_programa, agrepl(toascii(patron),
-                                      toascii(nombre_programa),
-                                      ignore.case = TRUE, ...))
-
+  return(out)
 }
-
-#' @describeIn par_id Busca estaciones en \code{\link{sia_estacion}} en base a
-#'   los campos `codigo_pto` y `estacion` de dicha tabla.
-#'
-#' @export
-est_id <- function(patron, ...) {
-
-  if (is.numeric(patron)) {
-    pnum <- floor(abs(patron))
-    if (pnum != patron)
-      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
-              patron, ' a ', pnum)
-    return(dplyr::filter(sia_estacion, id == pnum))
-  }
-
-  patron <- toascii(patron)
-
-  resA <- agrepl(patron, toascii(siabox::sia_estacion$codigo_pto),
-                 ignore.case = TRUE,
-                 ...)
-
-  resB <- agrepl(patron, toascii(siabox::sia_estacion$estacion),
-                 ignore.case = TRUE,
-                 ...)
-
-  siabox::sia_estacion[resA | resB,]
-
-}
-
-#' @describeIn par_id Busca matrices en \code{\link{sia_matriz}} en base al
-#'   campo `nombre` de dicha tabla.
-#'
-#' @export
-mat_id <- function(patron, ...) {
-  if (is.numeric(patron)) {
-    pnum <- floor(abs(patron))
-    if (pnum != patron)
-      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
-              patron, ' a ', pnum)
-    return(dplyr::filter(sia_matriz, id_matriz == pnum))
-  }
-  dplyr::filter(siabox::sia_matriz,
-                agrepl(toascii(patron),
-                       toascii(nombre),
-                       ignore.case = TRUE, ...))
-
-}
-
-#' @describeIn par_id Busca unidades en \code{\link{sia_unidad}} en base al
-#'   campo `uni_nombre` de dicha tabla.
-#' @export
-uni_id <- function(patron, ...) {
-  if (is.numeric(patron)) {
-    pnum <- floor(abs(patron))
-    if (pnum != patron)
-      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
-              patron, ' a ', pnum)
-    return(dplyr::filter(sia_unidad, id == pnum))
-  }
-  dplyr::filter(siabox::sia_unidad, agrepl(toascii(patron),
-                                  toascii(uni_nombre),
-                                   ignore.case = TRUE, ...))
-
-}
-
-#' @describeIn par_id Busca instituciones en \code{\link{sia_institucion}} en
-#'   base al campo `nombre` de dicha tabla.
-#' @export
-ins_id <- function(patron, ...) {
-  if (is.numeric(patron)) {
-    pnum <- floor(abs(patron))
-    if (pnum != patron)
-      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
-              patron, ' a ', pnum)
-    return(dplyr::filter(sia_institucion, id_institucion == pnum))
-  }
-  dplyr::filter(siabox::sia_institucion,
-                agrepl(toascii(patron),
-                       toascii(nombre),
-                       ignore.case = TRUE, ...))
-
-}
-
-#' @describeIn par_id Busca departamentos en \code{\link{sia_departamento}} en
-#'   base al campo `dep_nombre` de dicha tabla.
-#' @export
-dep_id <- function(patron, ...) {
-  if (is.numeric(patron)) {
-    pnum <- floor(abs(patron))
-    if (pnum != patron)
-      warning('Se cambi\u00f3 el n\u00famero de patron: de ',
-              patron, ' a ', pnum)
-    return(dplyr::filter(sia_departamento, id == pnum))
-  }
-  dplyr::filter(siabox::sia_departamento,
-                agrepl(toascii(patron),
-                       toascii(dep_nombre),
-                       ignore.case = TRUE, ...))
-
-}
-
 #' Convertir valores del SIA en numéricos
 #'
 #' Agrega una columna,llamada \code{valor}, de clase numeric, a una tabla con
@@ -1276,3 +1289,4 @@ valores_numericos <- function(.data,
 
   return(out)
 }
+

@@ -1,5 +1,9 @@
 # 2021-08-12
 
+La función `largo`, es la contraparte de la función `ancho`. Tiene más de una versión: una para trabajar con los datos del SIA (extracciones de iSIA, o variantes de `datos_sia`).
+
+# 2021-08-12
+
 Observaciones en `datos_sia`, `datos_sia_sed`: se resolvió un bug que había dejado a muchas observaciones como `NA`, cuando en verdad debían tener texto. Para esto se creó una función interna (`siabox:::pegar_obs`) y, para prevenir problemas, se modificaron los códigos generadores de las tablas mencionadas, así como el código de `consulta_muestras`.
 
 Además: la función `ancho` ahora no solamente concatena las observaciones pertenecientes a una misma muestra, sino que además agrega un texto para indicar a qué parámetro corresponde cada parte. Por ejemplo, en la muestra con ID 3291053, se pueden ver dos observaciones, para los parámetros STV y PT:
