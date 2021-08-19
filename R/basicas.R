@@ -1042,7 +1042,7 @@ largo.planilla <- function(.data, tcols = NULL) {
     ld_i  <- tcols$ncol[ld_l]
     lc_i  <- tcols$ncol[lc_l]
 
-    met_i <- c(tcols$ncol[is.na(tcols$id_parametro)], ncol(d))
+    met_i <- which(!(nc %in% tcols$ncol[!is.na(tcols$id_parametro)]))
     par_i <- tcols$ncol[par_l]
 
     s <- names(d)[met_i]
@@ -1092,6 +1092,7 @@ largo.planilla <- function(.data, tcols = NULL) {
   }
   return(out)
 }
+
 #' Convertir valores del SIA en numéricos
 #'
 #' Agrega una columna,llamada \code{valor}, de clase numeric, a una tabla con
