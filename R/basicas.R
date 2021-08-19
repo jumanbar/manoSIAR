@@ -1108,7 +1108,7 @@ largo.planilla <- function(.data, tcols = NULL) {
 #' @param .data `data.frame` con datos provenientes de la base de datos del SIA
 #'   (infambientalbd), con al menos tres columnas: `valor_minimo_str`,
 #'   `limite_deteccion` y `limite_cuantificacion` (ver detalles).
-#' @param filtrar_no_num `logical` (bandera). ¿Conservar los valores que no se
+#' @param filtrar_no_num `logical` (bandera). ¿Eliminar los valores que no se
 #'   pudieron convertir en numéricos?
 #' @param metodo character. Opciones: "sin_cambios", "basico", "simple",
 #'   "informe". Ver \code{\link{clasif_tipo_dato}}
