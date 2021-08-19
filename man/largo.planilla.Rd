@@ -33,13 +33,19 @@ campo del vSIA.
 Asume que siempre que hay LD también hay valores de LC.
 
 Importante: si \code{tcols} es \code{NULL}, se asume que las columnas parametro, LD y
-LC, vienen siempre en ese orden y que todos los parámetros tienen nombres
-únicos que los distinguen (cosa que tengo patente que no es necesariamente
-cierto). O sea que si están los parámetros AlcT y STF, entonces las columnas
-estarán en el orden: AlcT (mg CaCO3/L), AlcT LD, AlcT LC, STF (mg/L), STF LD,
-STF LC (aunque sí podrían estar todas las columnas STF antes que las de AlcT;
-lo que importa es que siempre venga LC luego de LD y este luego del parámetro
-en sí.).
+LC (si es que los datos incluyen límites de detección o cuantificación),
+vienen siempre en ese orden, para todos los parámetros y que todos los
+parámetros tienen nombres únicos que los distinguen (cosa que tengo patente
+que no es necesariamente cierto). O sea que si están los parámetros AlcT y
+STF, entonces las columnas estarán en el orden: AlcT (mg CaCO3/L), AlcT LD,
+AlcT LC, STF (mg/L), STF LD, STF LC (aunque sí podrían estar todas las
+columnas STF antes que las de AlcT; lo que importa es que siempre venga LC
+luego de LD y este luego del parámetro en sí.).
+
+Por esta razón, en vSIA, al hacer largo con el paquete de datos (PD), el cual
+puede incluir parámetros de campo sin LD o LC, al mismo tiempo que parámetros
+de laboratorio que sí incluye esos límites, es necesario que \code{tcols} no sea
+\code{NULL}.
 }
 \examples{
 lista_campo <- readRDS("tmp/campo.rds")
