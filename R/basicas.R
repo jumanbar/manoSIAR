@@ -1130,6 +1130,8 @@ largo.planilla <- function(.data, tcols = NULL) {
   } else  {
     out <- dplyr::filter(largo_val, !is.na(valor_minimo_str))
   }
+
+  class(out) <- c("planilla_larga", class(out))
   return(out)
 }
 
