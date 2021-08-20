@@ -1009,6 +1009,11 @@ largo.default <- function(.data) {
 #' lista_lab <- readRDS("tmp/lab.rds")
 #' largo(lista_lab$datos)
 #' largo(lista_lab$datos, lista_lab$columnas$tabla_columnas)
+#' lista_pd <- readRDS("~/R/sia_apps/vSIA/tmp/lista_pd.rds")
+#' largo.planilla(lista_pd$datos, lista_pd$ppd)
+#' datos_sin_ppd <-
+#'   lista_pd$datos[- lista_pd$ppd$ncol[lista_pd$ppd$tabla == "Campo"]]
+#' largo.planilla(datos_sin_ppd)
 largo.planilla <- function(.data, tcols = NULL) {
   datadim <- dim(.data)
   d <- dplyr::mutate(.data, nfila = 1:datadim[1])
@@ -1027,6 +1032,8 @@ largo.planilla <- function(.data, tcols = NULL) {
     ld_l  <- grepl("[[:space:]_]LD$", names(d), ignore.case = TRUE)
     lc_l  <- grepl("[[:space:]_]LC$", names(d), ignore.case = TRUE)
     par_l <- !met_l & !ld_l & !lc_l
+    if (sum(par_l) != sum(ld_l) || sum(par_l) != sum(lc_l))
+      stop("Todos los parámetros deben presentar columnas de Valor, LD y LC")
     s <- names(d)[met_l]
     met_i <- nc[met_l]
     par_i <- nc[par_l]
@@ -1037,14 +1044,22 @@ largo.planilla <- function(.data, tcols = NULL) {
     if (sum(ld_l)) {
       parnames <- gsub("(.*)[[:space:]_]LD", "\\1", names(d)[ld_l])
       names(d)[par_l] <- parnames
+
+      ncol_par <- tibble::tibble(nombre_clave = parnames,
+                                 ncol = par_i,
+                                 columna = names(d)[par_i],
+                                 ncol_ld = ld_i,
+                                 columna_ld = names(d)[ld_i],
+                                 ncol_lc = lc_i,
+                                 columna_lc = names(d)[lc_i])
     }
   } else {
     nombres_a <- "id_parametro"
     patron_ld <- "([0-9]+)_LD"
     patron_lc <- "([0-9]+)_LC"
-    par_l <- !is.na(tcols$id_parametro) & tcols$Tipo == "Valor"
-    ld_l  <- !is.na(tcols$id_parametro) & tcols$Tipo == "LD"
-    lc_l  <- !is.na(tcols$id_parametro) & tcols$Tipo == "LC"
+    par_l <- !is.na(tcols$id_parametro) & tcols$tipo == "Valor"
+    ld_l  <- !is.na(tcols$id_parametro) & tcols$tipo == "LD"
+    lc_l  <- !is.na(tcols$id_parametro) & tcols$tipo == "LC"
     ld_i  <- tcols$ncol[ld_l]
     lc_i  <- tcols$ncol[lc_l]
 
@@ -1055,6 +1070,23 @@ largo.planilla <- function(.data, tcols = NULL) {
     names(d)[par_i]  <- tcols$id_parametro[par_l]
     names(d)[ld_i]   <- paste0(tcols$id_parametro[ld_l], "_LD")
     names(d)[lc_i]   <- paste0(tcols$id_parametro[lc_l], "_LC")
+
+    ncol_par <-
+      data.frame(id_parametro = tcols$id_parametro[par_l],
+                 ncol = tcols$ncol[par_l],
+                 columna = tcols$columna[par_l]) %>%
+      dplyr::left_join(data.frame(id_parametro = tcols$id_parametro[ld_l],
+                                  ncol_ld = tcols$ncol[ld_l],
+                                  columna_ld = tcols$columna[ld_l],
+                                  ncol_lc = tcols$ncol[lc_l],
+                                  columna_lc = tcols$columna[lc_l]),
+                       by = "id_parametro")
+    # Equivalente aprox.:
+    # dplyr::select(tcols, id_parametro, tipo, ncol, columna) %>%
+    #   tidyr::pivot_wider(id_cols = id_parametro,
+    #                      values_from = c(ncol, columna),
+    #                      names_from = tipo) %>%
+    #   magrittr::set_names(tolower(names(.)))
   }
 
   largo_val <- d[c(met_i, par_i)] %>%
@@ -1086,7 +1118,9 @@ largo.planilla <- function(.data, tcols = NULL) {
 
     out <- largo_val %>%
       dplyr::left_join(largo_ld, by = c("nfila", nombres_a)) %>%
-      dplyr::left_join(largo_lc, by = c("nfila", nombres_a))
+      dplyr::left_join(largo_lc, by = c("nfila", nombres_a)) %>%
+      dplyr::left_join(ncol_par, by = nombres_a) %>%
+      dplyr::arrange(nfila, ncol)
 
     # El siguiente código tiene sentido si el formato largo se usa
     # exclusivamente para analizar los valores numéricos + LD y LC:
@@ -1098,6 +1132,7 @@ largo.planilla <- function(.data, tcols = NULL) {
   }
   return(out)
 }
+
 
 #' Convertir valores del SIA en numéricos
 #'
